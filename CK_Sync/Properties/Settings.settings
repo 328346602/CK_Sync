@@ -1,9 +1,0 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CK_Sync.Properties" GeneratedClassName="Settings">
-  <Profiles />
-  <Settings>
-    <Setting Name="CK_Sync_WebFeature_Feature" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">http://192.168.154.130/IGSLandService/Feature.asmx</Value>
-    </Setting>
-  </Settings>
-</SettingsFile>
