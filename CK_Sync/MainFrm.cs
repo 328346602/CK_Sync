@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using CM.Map;
-using Oracle.DataAccess.Client;
+using System.Data.OracleClient;
 using System.Configuration;
 
 
