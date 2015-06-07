@@ -73,6 +73,48 @@ namespace CM.Map
         }
 
         /// <summary>
+        /// 测试MDB数据库链接
+        /// </summary>
+        /// <param name="MDB_PATH">数据库文件路径</param>
+        /// <param name="Message">异常信息</param>
+        /// <returns></returns>
+        public static bool TestAccessConn(string MDB_PATH, ref string Message)
+        {
+            try
+            {
+                string connectingString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + MDB_PATH;// CM.Map.Config.GetConfigValue("MDB_Path");
+                CM.Map.DatabaseOledb acc_conn = new DatabaseOledb(connectingString);
+                if (acc_conn.Conn.State == ConnectionState.Closed)
+                {
+                    try
+                    {
+                        acc_conn.Open();
+                        Message = "连接成功";
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                    finally
+                    {
+                        //Close DataBase
+                        //关闭数据库连接
+                        acc_conn.Close();
+                    }
+                }
+                Message = "未知原因";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                CM.Map.Log.WriteLog("TestAccessConn()错误>>>>" + ex.Message);
+                throw ex;
+            }
+        }
+
+
+        /// <summary>
         /// 关闭数据库连接
         /// </summary>
         public void Close()

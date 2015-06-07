@@ -89,6 +89,47 @@ namespace CM.Map
         }
         #endregion
 
+        /// <summary>
+        /// 测试Oracle数据库链接
+        /// </summary>
+        /// <param name="DBIP">数据库IP</param>
+        /// <param name="DBPort">数据库端口</param>
+        /// <param name="DBName">数据库名称</param>
+        /// <param name="DBUser">数据库用户名</param>
+        /// <param name="DBPassword">数据库密码</param>
+        /// <param name="Message">异常信息</param>
+        /// <returns></returns>
+        public static bool TestOracleConn(string DBIP, string DBPort, string DBName, string DBUser, string DBPassword, ref string Message)
+        {
+            string ora_conn = "Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=" + DBIP + ")(PORT=" + DBPort + ")))(CONNECT_DATA=(SERVICE_NAME=" + DBName + ")));User Id=" + DBUser + ";Password=" + DBPassword + ";";
+            OracleConnection ORA_Con = new OracleConnection(ora_conn);
+            //打开数据库连接
+            if (ORA_Con.State == ConnectionState.Closed)
+            {
+                try
+                {
+                    //打开数据库连接
+                    ORA_Con.Open();
+                    Message = "连接成功";
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Message = e.Message;
+                    return false;
+                }
+                finally
+                {
+                    //Close DataBase
+                    //关闭数据库连接
+                    ORA_Con.Close();
+                }
+            }
+            Message = "未知原因";
+            return false;
+        }
+
+
         #region 执行带参数的SQL语句
         /// <summary>
         /// 执行不带参数的SQL语句

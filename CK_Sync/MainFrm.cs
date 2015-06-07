@@ -26,87 +26,8 @@ namespace CK_Sync
         }
 
 
-        /// <summary>
-        /// 测试Oracle数据库链接
-        /// </summary>
-        /// <param name="DBIP">数据库IP</param>
-        /// <param name="DBPort">数据库端口</param>
-        /// <param name="DBName">数据库名称</param>
-        /// <param name="DBUser">数据库用户名</param>
-        /// <param name="DBPassword">数据库密码</param>
-        /// <param name="Message">异常信息</param>
-        /// <returns></returns>
-        private bool TestOracleConn(string DBIP, string DBPort, string DBName, string DBUser, string DBPassword, ref string Message)
-        {
-            string ora_conn = "Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=" + DBIP + ")(PORT=" + DBPort + ")))(CONNECT_DATA=(SERVICE_NAME=" + DBName + ")));User Id=" + DBUser + ";Password=" + DBPassword + ";";
-            OracleConnection ORA_Con = new OracleConnection(ora_conn);
-            //打开数据库连接
-            if (ORA_Con.State == ConnectionState.Closed)
-            {
-                try
-                {
-                    //打开数据库连接
-                    ORA_Con.Open();
-                    Message = "连接成功";
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    Message = e.Message;
-                    return false;
-                }
-                finally
-                {
-                    //Close DataBase
-                    //关闭数据库连接
-                    ORA_Con.Close();
-                }
-            }
-            Message = "未知原因";
-            return false;
-        }
-
-        /// <summary>
-        /// 测试MDB数据库链接
-        /// </summary>
-        /// <param name="MDB_PATH">数据库文件路径</param>
-        /// <param name="Message">异常信息</param>
-        /// <returns></returns>
-        private bool TestAccessConn(string MDB_PATH, ref string Message)
-        {
-            try
-            {
-                string connectingString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + MDB_PATH;// CM.Map.Config.GetConfigValue("MDB_Path");
-                CM.Map.DatabaseOledb acc_conn = new DatabaseOledb(connectingString);
-                if (acc_conn.Conn.State == ConnectionState.Closed)
-                {
-                    try
-                    {
-                        acc_conn.Open();
-                        Message = "连接成功";
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
-                    finally
-                    {
-                        //Close DataBase
-                        //关闭数据库连接
-                        acc_conn.Close();
-                    }
-                }
-                Message = "未知原因";
-                return false;
-            }
-            catch(Exception ex)
-            {
-                CM.Map.Log.WriteLog(ex.Message);
-                throw ex;
-            }
-        }
-
+        
+        
         private bool TestIGS(string IGS_PATH,ref string Message)
         {
             try
@@ -117,13 +38,23 @@ namespace CK_Sync
                     //CM.Map.Feature f = new CM.Map.Feature("http://" + Config.GetConfigValue("IGS_PATH") + "//IGSLandService//Feature.asmx");
                     WebFeature.Feature f = new WebFeature.Feature();
                     f.Url = "http://" + Config.GetConfigValue("IGS_PATH") + "//IGSLandService//Feature.asmx";
-                    Message = "连接成功";
-                    return true;
+                    bool b = Boolean.Parse(f.GetLayerAttCountNew("","","").ToString());
+                    if (b)
+                    {
+                        Message = "连接成功";
+                    }
+                    else
+                    {
+                        Message = "连接图形服务失败！";
+                    }
+                    return b;
                 }
                 catch(Exception ex)
                 {
                     CM.Map.Log.WriteLog(ex.Message);
-                    //throw ex;
+                    Message = "连接图形服务失败！";
+                    return false;
+                    throw ex;
                 }
                 Message = "未知原因";
                 return false;
@@ -458,9 +389,29 @@ namespace CK_Sync
                     WebFeature.Feature f = new WebFeature.Feature();
                     f.Url = "http://" + IGSUri + "/IGSLandService/Feature.asmx";
 
-                    CM.Map.Log.WriteLog("http://" + IGSUri + "/IGSLandService/Feature.asmx");
+                    CM.Map.Log.WriteLog(f.Url);
                     string mdbSQL = "select * from 采矿申请登记 where 签发时间 is not null";
-                    DataTable dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
+                    DataTable dt = new DataTable();
+                    #region 判断是否查询到数据，若未查询到数据则不需要进行后面的判断
+                    if (dbMDB.GetDataSet(mdbSQL).Tables.Count > 0)
+                    {
+                        try
+                        {
+                            dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
+                        }
+                        catch (Exception ex)
+                        {
+                            errorMsg = "同步错误，请检查采矿权数据库设置！";
+                            return false;
+                            throw ex;
+                        }
+                    }
+                    else
+                    {
+                        errorMsg = "同步错误，采矿权数据库(MDB)中未查询到数据！";
+                        return false;
+                    }
+                    #endregion
                     DataRow dr = null;
                     #region 遍历采矿申请登记表，更新采矿权图层
                     for (int i = 0; i < dt.Rows.Count; i++)
@@ -486,7 +437,8 @@ namespace CK_Sync
             catch(Exception ex)
             {
                 CM.Map.Log.WriteLog("SynIGS错误>>>>" + ex.Message);
-                errorMsg="SynIGS错误!";
+                errorMsg="同步图形错误!";
+                return false;
                 throw ex;
             }
         }
@@ -810,23 +762,31 @@ namespace CK_Sync
                     frmSyn.Close();
                 });
             }
-            catch
+            catch(Exception ex)
             {
-
+                throw ex;
             }
         }
 
         private void btn_OADbTest_Click(object sender, EventArgs e)
         {
-            string sMessage = "";
-            bool b = TestOracleConn(txt_OA_DBIP.Text, txt_OA_DBPort.Text, txt_OA_DBName.Text, txt_OA_DBUserName.Text, txt_OA_DBPassword.Text, ref sMessage);
-            if (b)
+            try
             {
-                MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                string sMessage = "";
+                bool b = CM.Map.DatabaseORC.TestOracleConn(txt_OA_DBIP.Text, txt_OA_DBPort.Text, txt_OA_DBName.Text, txt_OA_DBUserName.Text, txt_OA_DBPassword.Text, ref sMessage);
+                if (b)
+                {
+                    MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw ex;
             }
         }
 
@@ -853,7 +813,7 @@ namespace CK_Sync
             try
             {
                 string sMessage = "";
-                bool b = TestAccessConn(txt_MDB_DBPATH.Text, ref sMessage);
+                bool b = CM.Map.DatabaseOledb.TestAccessConn(txt_MDB_DBPATH.Text, ref sMessage);
                 if (b)
                 {
                     MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
