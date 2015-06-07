@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK_Sync", "CK_Sync\CK_Sync.csproj", "{65FC2D40-E841-4FF2-ADB3-0BD1EFEAD906}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CM.Map", "CM.Map\CM.Map.csproj", "{4FC6C9C9-4100-4073-90E7-69D78FC06327}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65FC2D40-E841-4FF2-ADB3-0BD1EFEAD906}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65FC2D40-E841-4FF2-ADB3-0BD1EFEAD906}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65FC2D40-E841-4FF2-ADB3-0BD1EFEAD906}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65FC2D40-E841-4FF2-ADB3-0BD1EFEAD906}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FC6C9C9-4100-4073-90E7-69D78FC06327}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FC6C9C9-4100-4073-90E7-69D78FC06327}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FC6C9C9-4100-4073-90E7-69D78FC06327}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FC6C9C9-4100-4073-90E7-69D78FC06327}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
