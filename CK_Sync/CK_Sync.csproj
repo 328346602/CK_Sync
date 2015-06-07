@@ -125,6 +125,7 @@
     </Compile>
     <None Include="service.config">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Web References\WebFeature\Feature.wsdl" />
     <None Include="Web References\WebFeature\Reference.map">

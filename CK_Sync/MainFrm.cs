@@ -182,6 +182,73 @@ namespace CK_Sync
 
         }
 
+        #region 采探矿数据库坐标格式化
+        /// <summary>
+        /// 格式化采矿权数据库中储存的坐标串
+        /// </summary>
+        /// <param name="strDot">坐标串</param>
+        /// <returns>格式化后的坐标串</returns>
+        public static string GetCKFormattedDotString(string strDot)
+        {
+            if (string.IsNullOrEmpty(strDot))
+            {
+                return "";
+            }
+
+            string[] strDots = strDot.Split(',');
+            int iPlotNo = int.Parse(strDots[0]);        //圈数
+            int iCurIndex = 1;
+            string strDotString = "";
+
+            for (int i = 0; i < iPlotNo; i++)
+            {
+                try
+                {
+                    int iPointNo = int.Parse(strDots[iCurIndex]);
+                    iCurIndex += 2;
+
+
+                    for (int j = 0; j < iPointNo; j++)
+                    {
+                        strDotString += strDots[iCurIndex] + "," + strDots[iCurIndex + 1] + " ";
+                        //strDotString += strDots[iCurIndex+1] + "," + strDots[iCurIndex] + " ";
+                        iCurIndex += 3;
+                    }
+
+                    if (strDotString.EndsWith(" "))
+                    { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+
+                    if ((iCurIndex + 3 + 1) < strDots.Length)
+                    {
+                        int iPointTag = int.Parse(strDots[iCurIndex + 3]);
+                        if ((iCurIndex + iPointTag * 3 + 7 + 1) < strDots.Length)
+                        {
+                            if (strDots[iCurIndex + iPointTag * 3 + 7] == "-1")
+                            {
+                                strDotString += "@";
+                            }
+                            else
+                            {
+                                strDotString += "#";
+                            }
+                        }
+                    }
+                    //strDotString += "@";
+                    iCurIndex += 3;
+                }
+                catch (Exception oExcept)
+                { CM.Map.Log.WriteLog("采矿权数据库坐标解析问题：" + oExcept.Message); }
+            }
+
+            if (strDotString.EndsWith("@"))
+            { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+            else if (strDotString.EndsWith(" "))
+            { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+
+            return strDotString;
+        }
+        #endregion
+
         private void SaveConfig()
         {
             #region 保存OA数据库同步配置(Oracle)
@@ -254,20 +321,20 @@ namespace CK_Sync
 
                     DatabaseORC dbORA = new DatabaseORC(ora_Conn.ToString());
 
-                    #region 测试连接串
-                    try
-                    {
-                        dbORA.Open();
-                        dbORA.Close();
-                    }
-                    catch(Exception ex)
-                    {
-                        CM.Map.Log.WriteLog("DatabaseORC.Open()错误>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n" + ora_Conn.ToString() +"\r\n"+ ex.Message);
-                        MessageBox.Show(ex.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                        throw ex;
-                    }
-                    #endregion
+                    //#region 测试连接串
+                    //try
+                    //{
+                    //    dbORA.Open();
+                    //    dbORA.Close();
+                    //}
+                    //catch(Exception ex)
+                    //{
+                    //    CM.Map.Log.WriteLog("DatabaseORC.Open()错误>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n" + ora_Conn.ToString() +"\r\n"+ ex.Message);
+                    //    MessageBox.Show(ex.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    //    return;
+                    //    throw ex;
+                    //}
+                    //#endregion
 
                     #region 同步数据
 
@@ -400,12 +467,13 @@ namespace CK_Sync
                     {
                         dr = dt.Rows[i];
 
-                        if (!IsFeatureExitCKSQDJ(f, dr))
-                        {
-                            //CM.Map.Log.WriteLog("当前记录已存在于采矿申请登记数据中>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + new CKQInfo(dr).ToString());
-                            //插入更新语句
-                            b = b && IsFeatureExitCKSQDJ(f, dr);
-                        }
+                        //if (!IsFeatureExitCKSQDJ(f, dr))
+                        //{
+                        //    //CM.Map.Log.WriteLog("当前记录已存在于采矿申请登记数据中>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + new CKQInfo(dr).ToString());
+                        //    //插入更新语句
+                        //    b = b && IsFeatureExitCKSQDJ(f, dr);
+                        //}
+                        b = b && UpdateFeature(f, dr);
                     }
                     #endregion
 
@@ -437,8 +505,11 @@ namespace CK_Sync
             {
                 bool b = true;
                 string strWhere = "项目档案号='" + dr["项目档案号"] + "' and 签发时间=‘" + dr["签发时间"] + "'";
-                CM.Map.Log.WriteLog("IsFeatureExitCKSQDJ执行成功>>>>" + strWhere);
                 b = f.IsFeatureExistNew("两矿", "layerShortName=CKSQDJ", strWhere);
+                #region Debug
+                //CM.Map.Log.WriteLog(GetCKFormattedDotString(dr["区域坐标"].ToString()));
+                #endregion
+                //CM.Map.Log.WriteLog(b.ToString()+">>>>IsFeatureExitCKSQDJ执行成功>>>>" + strWhere);
                 return b;
 
                 //#region Debug
@@ -446,6 +517,7 @@ namespace CK_Sync
                 //string strWhere = "项目档案号='1111' and 签发时间=‘2012-04-04 00:00:00'";
                 //b = f.IsFeatureExistNew("两矿", "layerShortName=CKSQDJ", strWhere);
 
+                
                 //CM.Map.Log.WriteLog("IsFeatureExitCKSQDJ执行成功>>>>");
                 //return b;
                 //#endregion
@@ -457,6 +529,107 @@ namespace CK_Sync
                 return false;
                 throw ex;
                 
+            }
+        }
+        #endregion
+
+        #region 更新数据，重写UpdateFeature()方法
+        private bool UpdateFeature(WebFeature.Feature f, DataRow dr)
+        {
+            try
+            {
+                bool b = false;
+                if (IsFeatureExitCKSQDJ(f, dr))
+                {
+                    b = true;
+                }
+                else
+                {
+                    #region attField
+                    string[] attField ={   "项目档案号",
+                                           "项目类型",
+                                           "申请人",
+                                           "电话",
+                                           "地址",
+                                           "邮编",
+                                           "矿山名称",
+                                           "经济类型",
+                                           "项目审批机关",
+                                           "批准文号",
+                                           "资金来源",
+                                           "设计年限",
+                                           "开采主矿种",
+                                           "设计规模",
+                                           "规模单位",
+                                           "开采方式",
+                                           "采矿方法",
+                                           "选矿方法",
+                                           "应缴纳采矿权价款",
+                                           "采深上限",
+                                           "采深下限",
+                                           "矿区面积",
+                                           "采矿权使用费",
+                                           "有效期限",
+                                           "有效期起",
+                                           "有效期止",
+                                           "矿区编码",
+                                           "原许可证号",
+                                           "发证机关名称",
+                                           "区域坐标",
+                                           "设计利用储量",
+                                           "其它主矿种",
+                                           "签发时间"};
+                    #endregion
+                    #region attValue
+                    string[] attValue = {   dr["项目档案号"].ToString(),
+                                            dr["项目类型"].ToString(),
+                                            dr["申请人"].ToString(),
+                                            dr["电话"].ToString(),
+                                            dr["地址"].ToString(), 
+                                            dr["邮编"].ToString(),
+                                            dr["矿山名称"].ToString(),
+                                            dr["经济类型"].ToString(),
+                                            dr["项目审批机关"].ToString(),
+                                            dr["批准文号"].ToString(),
+                                            dr["资金来源"].ToString(),
+                                            dr["设计年限"].ToString(),
+                                            dr["开采主矿种"].ToString(),
+                                            dr["设计规模"].ToString(),
+                                            dr["规模单位"].ToString(),
+                                            dr["开采方式"].ToString(),
+                                            dr["采矿方法"].ToString(),
+                                            dr["选矿方法"].ToString(),
+                                            dr["应缴纳采矿权价款"].ToString(),
+                                            dr["采深上限"].ToString(),
+                                            dr["采深下限"].ToString(),
+                                            dr["矿区面积"].ToString(),
+                                            dr["采矿权使用费"].ToString(),
+                                            dr["有效期限"].ToString(),
+                                            dr["有效期起"].ToString(),
+                                            dr["有效期止"].ToString(),
+                                            dr["矿区编码"].ToString(),
+                                            dr["原许可证号"].ToString(),
+                                            dr["发证机关名称"].ToString(),
+                                            dr["区域坐标"].ToString(),
+                                            dr["设计利用储量"].ToString(),
+                                            dr["其它主矿种"].ToString(),
+                                            dr["签发时间"].ToString()};
+                    #endregion
+                    b = f.AddFeatureNew("两矿","layerShortName=CKSQDJ",GetCKFormattedDotString(dr["区域坐标"].ToString()),attField,attValue);
+                    for (int i = 0; i < attField.Length;i++ )
+                        CM.Map.Log.WriteLog(attField[i].ToString());
+
+                    CM.Map.Log.WriteLog("===========================================================");
+                    for (int i = 0; i < attValue.Length;i++ )
+                        CM.Map.Log.WriteLog(attValue[i].ToString());
+                }
+                return b;
+            }
+            catch(Exception ex)
+            {
+                errorMsg = "UpdateFeature()方法出错！";
+                CM.Map.Log.WriteLog(errorMsg + ">>>>" + ex.Message);
+                throw ex;
             }
         }
         #endregion
