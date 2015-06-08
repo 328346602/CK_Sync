@@ -28,9 +28,9 @@ namespace CK_Sync
         }
 
 
-        
-        
-        private bool TestIGS(string IGS_PATH,ref string Message)
+
+
+        private bool TestIGS(string IGS_PATH, ref string Message)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace CK_Sync
                     }
                     return b;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log.WriteLog(ex.Message);
                     Message = "连接图形服务失败！";
@@ -58,7 +58,7 @@ namespace CK_Sync
                     throw ex;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.WriteLog(ex.Message);
                 throw ex;
@@ -66,7 +66,7 @@ namespace CK_Sync
         }
 
         /// <summary>
-        /// 读取配置文件中相关的值
+        /// 读取配置文件中相关的值,并赋值给对应的控件
         /// </summary>
         private void GetConfigValue()
         {
@@ -230,15 +230,11 @@ namespace CK_Sync
 
         private void SynDatas()
         {
-            //List<CKQInfo> datas = null;
-            //数据库连接字符串
-            //string strConn = null;
             {
                 DialogResult ret = MessageBox.Show("同步之前请检查、测试各项设置并保存！","注意", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (ret == DialogResult.Yes)
                 {
                     DatabaseOledb dbMDB = new DatabaseOledb(CM.Map.Config.GetConfigValue("MDB_ConnectString"));//MDB连接
-                    //StringBuilder ora_Conn = new StringBuilder("data source=" + CM.Map.Config.GetConfigValue("OA_DBName") + ";user=" + CM.Map.Config.GetConfigValue("OA_DBUserName") + ";password=" + CM.Map.Config.GetConfigValue("OA_DBPassword") + ";");
                     #region Oracle连接串StringBuilder ora_Conn
                     StringBuilder ora_Conn = new StringBuilder("Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=");
                     ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBIP"));
