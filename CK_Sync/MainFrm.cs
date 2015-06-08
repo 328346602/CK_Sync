@@ -20,6 +20,8 @@ namespace CK_Sync
         SynPromptDlg frmSyn = new SynPromptDlg();
 
         string errorMsg = string.Empty;
+        string strLayerShortName = "CKSQDJ";
+
         public MainFrm()
         {
             InitializeComponent();
@@ -34,11 +36,10 @@ namespace CK_Sync
             {
                 try
                 {
-                    //CM.Map.Log.WriteLog("http://" + Config.GetConfigValue("IGS_PATH") + "/IGSLandService/Feature.asmx");
-                    //CM.Map.Feature f = new CM.Map.Feature("http://" + Config.GetConfigValue("IGS_PATH") + "//IGSLandService//Feature.asmx");
                     WebFeature.Feature f = new WebFeature.Feature();
                     f.Url = "http://" + Config.GetConfigValue("IGS_PATH") + "//IGSLandService//Feature.asmx";
-                    bool b = Boolean.Parse(f.GetLayerAttCountNew("","","").ToString());
+                    //bool b = Boolean.Parse(f.GetLayerAttCountNew("两矿","layerShortName="+strLayerShortName,"项目档案号 is not null").ToString());
+                    bool b = Boolean.Parse(f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, "项目档案号 is not null").ToString());
                     if (b)
                     {
                         Message = "连接成功";
@@ -51,17 +52,15 @@ namespace CK_Sync
                 }
                 catch(Exception ex)
                 {
-                    CM.Map.Log.WriteLog(ex.Message);
+                    Log.WriteLog(ex.Message);
                     Message = "连接图形服务失败！";
                     return false;
                     throw ex;
                 }
-                Message = "未知原因";
-                return false;
             }
             catch(Exception ex)
             {
-                CM.Map.Log.WriteLog(ex.Message);
+                Log.WriteLog(ex.Message);
                 throw ex;
             }
         }
@@ -168,7 +167,9 @@ namespace CK_Sync
                     iCurIndex += 3;
                 }
                 catch (Exception oExcept)
-                { CM.Map.Log.WriteLog("采矿权数据库坐标解析问题：" + oExcept.Message); }
+                {
+                    Log.WriteLog("采矿权数据库坐标解析问题：" + oExcept.Message);
+                }
             }
 
             if (strDotString.EndsWith("@"))
@@ -230,13 +231,12 @@ namespace CK_Sync
             //数据库连接字符串
             //string strConn = null;
             {
-                DialogResult ret = MessageBox.Show("初始化同步将删除原来存在的所有用户/机构/角色等信息，一旦进行初始化同步，需要在一张图系统中重新对用户/机构设定系统权限，确定要进行初始化同步？",
-                          "初始化同步警告", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                DialogResult ret = MessageBox.Show("同步之前请检查、测试各项设置并保存！","注意", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (ret == DialogResult.Yes)
                 {
                     DatabaseOledb dbMDB = new DatabaseOledb(CM.Map.Config.GetConfigValue("MDB_ConnectString"));//MDB连接
                     //StringBuilder ora_Conn = new StringBuilder("data source=" + CM.Map.Config.GetConfigValue("OA_DBName") + ";user=" + CM.Map.Config.GetConfigValue("OA_DBUserName") + ";password=" + CM.Map.Config.GetConfigValue("OA_DBPassword") + ";");
-                    #region Oracle连接串
+                    #region Oracle连接串StringBuilder ora_Conn
                     StringBuilder ora_Conn = new StringBuilder("Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=");
                     ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBIP"));
                     ora_Conn.Append(")(PORT=");
@@ -252,39 +252,84 @@ namespace CK_Sync
 
                     DatabaseORC dbORA = new DatabaseORC(ora_Conn.ToString());
 
-                    //#region 测试连接串
-                    //try
-                    //{
-                    //    dbORA.Open();
-                    //    dbORA.Close();
-                    //}
-                    //catch(Exception ex)
-                    //{
-                    //    CM.Map.Log.WriteLog("DatabaseORC.Open()错误>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n" + ora_Conn.ToString() +"\r\n"+ ex.Message);
-                    //    MessageBox.Show(ex.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    //    return;
-                    //    throw ex;
-                    //}
-                    //#endregion
-
                     #region 同步数据
 
                     string IGSUri = Config.GetConfigValue("IGS_PATH");
-                    if (SynORA(dbORA, dbMDB) && SynIGS(dbMDB, IGSUri))
+
+                    #region MDBSyn=false
+                    if (Config.GetConfigValue("MDBSyn") == "false")
                     {
-                        MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
+                        MessageBox.Show("请检查采矿权数据库配置并保存!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
                     }
+                    #endregion
+
+                    #region OASyn=true
+                    else if (Config.GetConfigValue("OASyn") == "true")
+                    {
+                        #region OASyn/IGSSyn都为true
+                        if (Config.GetConfigValue("IGSSyn") == "true")
+                        {
+                            if (SynORA(dbORA, dbMDB) && SynIGS(dbMDB, IGSUri))
+                            {
+                                MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
+                                return;
+                            }
+                            else
+                            {
+                                MessageBox.Show(errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                        }
+                        #endregion
+
+                        #region IGSSyn为false
+                        else
+                        {
+                            if (SynORA(dbORA, dbMDB))
+                            {
+                                MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
+                                return;
+                            }
+                            else
+                            {
+                                MessageBox.Show(errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                        }
+                        #endregion
+                    }
+                    #endregion
+
+                    #region OASyn=false/IGSSyn=true
+                    else if (Config.GetConfigValue("IGSSyn") == "true")
+                    {
+                        if (SynIGS(dbMDB, IGSUri))
+                        {
+                            MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
+                            return;
+                        }
+                        else
+                        {
+                            MessageBox.Show("图形同步失败，请检查配置并保存！", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            //Log.WriteLog("IGSSyn错误『OASyn=false/IGSSyn=true』>>>>" + errorMsg);
+                            return;
+                        }
+                    }
+                    #endregion
+
+                    #region MDBSyn=true&&OASyn=false&&IGSSyn=false
                     else
                     {
-                        MessageBox.Show(errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("请检查MapGIS一张图政务/图形同步设置并保存!", "信息", MessageBoxButtons.OK, MessageBoxIcon.Question);
                         return;
                     }
+                    #endregion
                     #endregion
                 }
             }
 
-            MessageBox.Show("用户同步完成!", "同步完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            
         }
 
         #region 同步电子政务数据
@@ -299,72 +344,58 @@ namespace CK_Sync
 
             try
             {
-                    bool b = true;
-                    if (Config.GetConfigValue("OASyn") == "true")//根据配置文件决定是否进行同步
+                bool b = true;
+
+                string mdbSQL = "select * from 采矿申请登记 where 签发时间 is not null";
+                DataTable dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
+                DataRow dr = null;
+                //DataRow temp = null;
+                string oraSQL = string.Empty;
+                string upSQL = string.Empty;
+
+                #region 更新『采矿申请登记』表
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    dr = dt.Rows[i];
+                    //oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间 is not null and to_char(签发时间,'yyyy-mm-dd,hh:mi:ss')='" + dr["签发时间"] + "'";
+                    oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间=to_date('" + dr["签发时间"] + "','yyyy-mm-dd hh24:mi:ss')";
+                    //Log.WriteLog(oraSQL);
+                    DataSet ds = dbORA.GetDataSet(oraSQL);
+
+                    if (!(ds.Tables[0].Rows.Count > 0))
                     {
-                        string mdbSQL = "select * from 采矿申请登记 where 签发时间 is not null";
-                        DataTable dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
-                        DataRow dr = null;
-                        //DataRow temp = null;
-                        string oraSQL = string.Empty;
-                        string upSQL = string.Empty;
-
-                        #region 更新采矿申请登记表
-                        for (int i = 0; i < dt.Rows.Count; i++)
-                        {
-                            dr = dt.Rows[i];
-                            //oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间 is not null and to_char(签发时间,'yyyy-mm-dd,hh:mi:ss')='" + dr["签发时间"] + "'";
-                            oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间=to_date('" + dr["签发时间"] + "','yyyy-mm-dd hh24:mi:ss')";
-                            CM.Map.Log.WriteLog(oraSQL);
-                            DataSet ds = dbORA.GetDataSet(oraSQL);
-
-                            if (ds.Tables[0].Rows.Count > 0)
-                            {
-                                CM.Map.Log.WriteLog("当前记录已存在于数据库中>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + new CKQInfo(dr).ToString());
-                            }
-                            else
-                            {
-
-                                CM.Map.Log.WriteLog("当前记录不存在于数据库中>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n");
-                                upSQL = UpdateSQL(dr, "采矿申请登记");
-                                CM.Map.Log.WriteLog(upSQL);
-                                dbORA.ExecuteSql(upSQL);
-                            }
-                        }
-                        #endregion
-
-                        #region 更新采矿申请登记表
-                        mdbSQL = "select * from 项目档案 where 签发时间 is not null";
-                        dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
-                        for (int i = 0; i < dt.Rows.Count; i++)
-                        {
-                            dr = dt.Rows[i];
-                            //oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间 is not null and to_char(签发时间,'yyyy-mm-dd,hh:mi:ss')='" + dr["签发时间"] + "'";
-                            oraSQL = "select * from 项目档案 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间=to_date('" + dr["签发时间"] + "','yyyy-mm-dd hh24:mi:ss')";
-                            CM.Map.Log.WriteLog(oraSQL);
-                            DataSet ds = dbORA.GetDataSet(oraSQL);
-
-                            if (ds.Tables[0].Rows.Count > 0)
-                            {
-                                CM.Map.Log.WriteLog("当前记录已存在于数据库中>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + new CKQInfo(dr).ToString());
-                            }
-                            else
-                            {
-
-                                CM.Map.Log.WriteLog("当前记录不存在于数据库中>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n");
-                                upSQL = UpdateSQL(dr, "项目档案");
-                                CM.Map.Log.WriteLog(upSQL);
-                                dbORA.ExecuteSql(upSQL);
-                            }
-                        }
-                        #endregion
+                        upSQL = UpdateSQL(dr, "采矿申请登记");
+                        dbORA.ExecuteSql(upSQL);
                     }
+                    
+                }
+                #endregion
+
+                #region 更新『项目档案』表
+                mdbSQL = "select * from 项目档案 where 签发时间 is not null";
+                dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    dr = dt.Rows[i];
+                    //oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间 is not null and to_char(签发时间,'yyyy-mm-dd,hh:mi:ss')='" + dr["签发时间"] + "'";
+                    oraSQL = "select * from 项目档案 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间=to_date('" + dr["签发时间"] + "','yyyy-mm-dd hh24:mi:ss')";
+                    DataSet ds = dbORA.GetDataSet(oraSQL);
+
+                    if (!(ds.Tables[0].Rows.Count > 0))
+                    {
+                        upSQL = UpdateSQL(dr, "项目档案");
+                        dbORA.ExecuteSql(upSQL);
+                    }
+                }
+                #endregion
+
                 return b;
             }
             catch (Exception ex)
             {
-                CM.Map.Log.WriteLog("SynORA同步错误>>>>" + ex.Message);
-                errorMsg="SynORA同步错误!";
+                Log.WriteLog("SynORA同步错误>>>>" + ex.Message);
+                errorMsg = "同步MapGIS一张图数据库时出错，请检查相关配置信息！";
+                return false;
                 throw ex;
             }
         }
@@ -383,61 +414,111 @@ namespace CK_Sync
             try
             {
                 bool b = true;
-                if (Config.GetConfigValue("IGSSyn") == "true")//根据配置文件决定是否进行SynIGS同步
+
+                //CM.Map.Feature f = new CM.Map.Feature("http://" + IGSUri + "/IGSLandService/Feature.asmx");
+                WebFeature.Feature f = new WebFeature.Feature();
+                f.Url = "http://" + IGSUri + "/IGSLandService/Feature.asmx";;
+                string mdbSQL = "select * from 采矿申请登记 where 签发时间 is not null";
+                DataTable dt = new DataTable();
+                #region 判断是否查询到数据，若未查询到数据则不需要进行后面的判断
+                if (dbMDB.GetDataSet(mdbSQL).Tables.Count > 0)
                 {
-                    //CM.Map.Feature f = new CM.Map.Feature("http://" + IGSUri + "/IGSLandService/Feature.asmx");
-                    WebFeature.Feature f = new WebFeature.Feature();
-                    f.Url = "http://" + IGSUri + "/IGSLandService/Feature.asmx";
-
-                    CM.Map.Log.WriteLog(f.Url);
-                    string mdbSQL = "select * from 采矿申请登记 where 签发时间 is not null";
-                    DataTable dt = new DataTable();
-                    #region 判断是否查询到数据，若未查询到数据则不需要进行后面的判断
-                    if (dbMDB.GetDataSet(mdbSQL).Tables.Count > 0)
+                    try
                     {
-                        try
-                        {
-                            dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
-                        }
-                        catch (Exception ex)
-                        {
-                            errorMsg = "同步错误，请检查采矿权数据库设置！";
-                            return false;
-                            throw ex;
-                        }
+                        dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        errorMsg = "同步错误，采矿权数据库(MDB)中未查询到数据！";
+                        errorMsg = "同步错误，请检查采矿权数据库设置！";
                         return false;
+                        throw ex;
                     }
-                    #endregion
-                    DataRow dr = null;
-                    #region 遍历采矿申请登记表，更新采矿权图层
-                    for (int i = 0; i < dt.Rows.Count; i++)
-                    {
-                        dr = dt.Rows[i];
-
-                        //if (!IsFeatureExitCKSQDJ(f, dr))
-                        //{
-                        //    //CM.Map.Log.WriteLog("当前记录已存在于采矿申请登记数据中>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + new CKQInfo(dr).ToString());
-                        //    //插入更新语句
-                        //    b = b && IsFeatureExitCKSQDJ(f, dr);
-                        //}
-                        b = b && UpdateFeature(f, dr);
-                    }
-                    #endregion
-
-                    #region Debug
-                    b = b && IsFeatureExitCKSQDJ(f, dr);
-                    #endregion
                 }
-                return b ;
+                else
+                {
+                    errorMsg = "同步错误，采矿权数据库(MDB)中未查询到数据！";
+                    return false;
+                }
+                #endregion
+                DataRow dr = null;
+                #region 遍历采矿申请登记表，更新采矿权图层
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    dr = dt.Rows[i];
+                    try
+                    {
+                        b = UpdateFeature(f, dr) && b;
+                        //Log.WriteLog(string.Format(b.ToString() + "循环第{0}次", i + 1));
+                        if (!b)
+                            return b;
+                        //else
+                        //    continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteLog("UpdateFeature()>>>>" + ex.Message);
+                        return false;
+                        throw ex;
+                    }
+                }
+                #endregion
+
+                #region 查询项目档案中已注销矿权信息
+
+                #region 重新初始化数据对象
+                mdbSQL = string.Empty;
+                dt = null;
+                dr = null;
+                #endregion
+                mdbSQL = "select * from 项目档案 where 项目类型=1070";
+
+                if (dbMDB.GetDataSet(mdbSQL).Tables.Count > 0)
+                {
+                    try
+                    {
+                        //Log.WriteLog(mdbSQL);
+                        dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMsg = "同步错误，请检查采矿权数据库设置！";
+                        return false;
+                        throw ex;
+                    }
+                }
+                else
+                {
+                    b = b && true;
+                }
+                #endregion
+
+                #region 遍历项目档案登记表，删除已注销矿权
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    dr = dt.Rows[i];
+                    try
+                    {
+                        b = DelFeature(f, dr) && b;
+                        //Log.WriteLog(string.Format("DelFeature()>>>>"+b.ToString() + "循环第{0}次", i + 1));
+                        if (!b)
+                            return b;
+                        //else
+                        //    continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteLog("DelFeature()>>>>" + ex.Message);
+                        return false;
+                        throw ex;
+                    }
+                }
+                #endregion
+                return b;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                CM.Map.Log.WriteLog("SynIGS错误>>>>" + ex.Message);
-                errorMsg="同步图形错误!";
+                Log.WriteLog("SynIGS错误>>>>" + ex.Message);
+                errorMsg = "同步图形错误!";
                 return false;
                 throw ex;
             }
@@ -457,26 +538,26 @@ namespace CK_Sync
             {
                 bool b = true;
                 string strWhere = "项目档案号='" + dr["项目档案号"] + "' and 签发时间=‘" + dr["签发时间"] + "'";
-                b = f.IsFeatureExistNew("两矿", "layerShortName=CKSQDJ", strWhere);
+                b = f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere) && b;
                 #region Debug
-                //CM.Map.Log.WriteLog(GetCKFormattedDotString(dr["区域坐标"].ToString()));
+                //Log.WriteLog(GetCKFormattedDotString(dr["区域坐标"].ToString()));
                 #endregion
-                //CM.Map.Log.WriteLog(b.ToString()+">>>>IsFeatureExitCKSQDJ执行成功>>>>" + strWhere);
+                //Log.WriteLog(b.ToString()+">>>>IsFeatureExitCKSQDJ执行成功>>>>" + strWhere);
                 return b;
 
                 //#region Debug
                 //bool b = true;
                 //string strWhere = "项目档案号='1111' and 签发时间=‘2012-04-04 00:00:00'";
-                //b = f.IsFeatureExistNew("两矿", "layerShortName=CKSQDJ", strWhere);
+                //b = f.IsFeatureExistNew("两矿", "layerShortName="+strLayerShortName, strWhere);
 
                 
-                //CM.Map.Log.WriteLog("IsFeatureExitCKSQDJ执行成功>>>>");
+                //Log.WriteLog("IsFeatureExitCKSQDJ执行成功>>>>");
                 //return b;
                 //#endregion
             }
             catch (Exception ex)
             {
-                CM.Map.Log.WriteLog("IsFeatureExitCKSQDJ()方法报错>>>>" + ex.Message);
+                Log.WriteLog("IsFeatureExitCKSQDJ()方法报错>>>>" + ex.Message);
                 errorMsg = "IsFeatureExitCKSQDJ()方法报错!";
                 return false;
                 throw ex;
@@ -493,7 +574,7 @@ namespace CK_Sync
                 bool b = false;
                 if (IsFeatureExitCKSQDJ(f, dr))
                 {
-                    b = true;
+                    return true;
                 }
                 else
                 {
@@ -532,6 +613,7 @@ namespace CK_Sync
                                            "其它主矿种",
                                            "签发时间"};
                     #endregion
+
                     #region attValue
                     string[] attValue = {   dr["项目档案号"].ToString(),
                                             dr["项目类型"].ToString(),
@@ -567,20 +649,84 @@ namespace CK_Sync
                                             dr["其它主矿种"].ToString(),
                                             dr["签发时间"].ToString()};
                     #endregion
-                    b = f.AddFeatureNew("两矿","layerShortName=CKSQDJ",GetCKFormattedDotString(dr["区域坐标"].ToString()),attField,attValue);
-                    for (int i = 0; i < attField.Length;i++ )
-                        CM.Map.Log.WriteLog(attField[i].ToString());
+                    
+                    #region 判断当前『项目档案号』是否存在于图层中
+                    string strWhere = "项目档案号='" + dr["项目档案号"].ToString() + "'";
+                    #region 存在时先删除记录
+                    if (f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere))
+                    {
+                        try
+                        {
+                            #region 删除对应记录
+                            if (!f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere))
+                            {
+                                b = false;
+                                return b;
+                            }
+                            #endregion
+                        }
+                        catch (Exception ex)
+                        {
 
-                    CM.Map.Log.WriteLog("===========================================================");
-                    for (int i = 0; i < attValue.Length;i++ )
-                        CM.Map.Log.WriteLog(attValue[i].ToString());
+                            throw ex;
+                        }
+
+                    }
+                    #endregion
+                    #endregion
+
+                    #region 插入记录
+                    //Log.WriteLog("AddFeatureNew");
+                    ///尝试插入数据
+                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString()), attField, attValue))
+                    {
+                        b = true;
+                    }
+                    else
+                    {
+                        b = false;
+                    }
+                    #endregion
+
+                    #region UpdateFeature.Debug
+                    //for (int i = 0; i < attField.Length;i++ )
+                    //    Log.WriteLog(attField[i].ToString());
+
+                    //Log.WriteLog("===========================================================");
+                    //for (int i = 0; i < attValue.Length;i++ )
+                    //    Log.WriteLog(attValue[i].ToString());
+                    #endregion
                 }
                 return b;
             }
             catch(Exception ex)
             {
                 errorMsg = "UpdateFeature()方法出错！";
-                CM.Map.Log.WriteLog(errorMsg + ">>>>" + ex.Message);
+                Log.WriteLog(errorMsg + ">>>>" + ex.Message);
+                throw ex;
+            }
+        }
+        #endregion
+
+        #region 删除已注销要素
+        public bool DelFeature(WebFeature.Feature f, DataRow dr)
+        {
+            try
+            {
+                bool b = true;
+                string strWhere = "项目档案号='" + dr["项目档案号"].ToString() + "'";
+                //Log.WriteLog("strWhere>>>>" + strWhere);
+                #region 要素存在时，删除
+                //if (f.IsFeatureExistNew("两矿","layerShortName="+strLayerShortName,strWhere))
+                //{
+                    b = f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere) && b;
+                //}
+                #endregion
+                return b;
+            }
+            catch (Exception ex)
+            {
+                return false;
                 throw ex;
             }
         }
@@ -732,12 +878,12 @@ namespace CK_Sync
                 sb.Append(dr["合并项目"] + "','"); 
                 sb.Append(dr["备注"] + "')");
                 //sb.Replace(" ", "");
-                //CM.Map.Log.WriteLog(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n" + sb.ToString());
+                //Log.WriteLog(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n" + sb.ToString());
                 return sb.ToString();
             }
             catch (Exception ex)
             {
-                CM.Map.Log.WriteLog(ex.Message);
+                Log.WriteLog(ex.Message);
                 throw ex;
             }
         }
@@ -878,7 +1024,7 @@ namespace CK_Sync
             catch (Exception ex)
             {
                 //throw ex;
-                CM.Map.Log.WriteLog(ex.Message);
+                Log.WriteLog(ex.Message);
                 MessageBox.Show(errorMsg.ToString());
             }
         }

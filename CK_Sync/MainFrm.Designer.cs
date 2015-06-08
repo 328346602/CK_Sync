@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btn_OADbTest = new System.Windows.Forms.Button();
             this.CKB_OA_Syn = new System.Windows.Forms.CheckBox();
             this.txt_OA_DBPassword = new System.Windows.Forms.TextBox();
             this.txt_OA_DBUserName = new System.Windows.Forms.TextBox();
@@ -40,13 +41,12 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.btn_OADbTest = new System.Windows.Forms.Button();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.btnOpenMDB = new System.Windows.Forms.Button();
             this.CKB_CKQ_Syn = new System.Windows.Forms.CheckBox();
             this.btn_MDBDbTest = new System.Windows.Forms.Button();
             this.txt_MDB_DBPATH = new System.Windows.Forms.TextBox();
             this.label28 = new System.Windows.Forms.Label();
-            this.btnOpenMDB = new System.Windows.Forms.Button();
             this.Btn_Save = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.btn_IGSTest = new System.Windows.Forms.Button();
@@ -79,6 +79,16 @@
             this.groupBox1.Size = new System.Drawing.Size(317, 259);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
+            // 
+            // btn_OADbTest
+            // 
+            this.btn_OADbTest.Location = new System.Drawing.Point(93, 201);
+            this.btn_OADbTest.Name = "btn_OADbTest";
+            this.btn_OADbTest.Size = new System.Drawing.Size(160, 52);
+            this.btn_OADbTest.TabIndex = 12;
+            this.btn_OADbTest.Text = "测试连接";
+            this.btn_OADbTest.UseVisualStyleBackColor = true;
+            this.btn_OADbTest.Click += new System.EventHandler(this.btn_OADbTest_Click);
             // 
             // CKB_OA_Syn
             // 
@@ -170,16 +180,6 @@
             this.label5.TabIndex = 0;
             this.label5.Text = "数据库地址:";
             // 
-            // btn_OADbTest
-            // 
-            this.btn_OADbTest.Location = new System.Drawing.Point(93, 201);
-            this.btn_OADbTest.Name = "btn_OADbTest";
-            this.btn_OADbTest.Size = new System.Drawing.Size(160, 52);
-            this.btn_OADbTest.TabIndex = 12;
-            this.btn_OADbTest.Text = "测试连接";
-            this.btn_OADbTest.UseVisualStyleBackColor = true;
-            this.btn_OADbTest.Click += new System.EventHandler(this.btn_OADbTest_Click);
-            // 
             // groupBox7
             // 
             this.groupBox7.Controls.Add(this.btnOpenMDB);
@@ -192,6 +192,16 @@
             this.groupBox7.Size = new System.Drawing.Size(317, 259);
             this.groupBox7.TabIndex = 23;
             this.groupBox7.TabStop = false;
+            // 
+            // btnOpenMDB
+            // 
+            this.btnOpenMDB.Location = new System.Drawing.Point(97, 63);
+            this.btnOpenMDB.Name = "btnOpenMDB";
+            this.btnOpenMDB.Size = new System.Drawing.Size(118, 31);
+            this.btnOpenMDB.TabIndex = 22;
+            this.btnOpenMDB.Text = "选择采矿权数据库";
+            this.btnOpenMDB.UseVisualStyleBackColor = true;
+            this.btnOpenMDB.Click += new System.EventHandler(this.btnOpenMDB_Click);
             // 
             // CKB_CKQ_Syn
             // 
@@ -228,16 +238,6 @@
             this.label28.Size = new System.Drawing.Size(71, 12);
             this.label28.TabIndex = 10;
             this.label28.Text = "数据库路径:";
-            // 
-            // btnOpenMDB
-            // 
-            this.btnOpenMDB.Location = new System.Drawing.Point(97, 63);
-            this.btnOpenMDB.Name = "btnOpenMDB";
-            this.btnOpenMDB.Size = new System.Drawing.Size(118, 31);
-            this.btnOpenMDB.TabIndex = 22;
-            this.btnOpenMDB.Text = "选择采矿权数据库";
-            this.btnOpenMDB.UseVisualStyleBackColor = true;
-            this.btnOpenMDB.Click += new System.EventHandler(this.btnOpenMDB_Click);
             // 
             // Btn_Save
             // 
@@ -329,7 +329,7 @@
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.groupBox1);
             this.Name = "MainFrm";
-            this.Text = "Form1";
+            this.Text = "采矿权数据同步工具";
             this.Load += new System.EventHandler(this.MainFrm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
