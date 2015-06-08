@@ -95,10 +95,11 @@
             this.CKB_OA_Syn.AutoSize = true;
             this.CKB_OA_Syn.Location = new System.Drawing.Point(11, 0);
             this.CKB_OA_Syn.Name = "CKB_OA_Syn";
-            this.CKB_OA_Syn.Size = new System.Drawing.Size(96, 16);
+            this.CKB_OA_Syn.Size = new System.Drawing.Size(144, 16);
             this.CKB_OA_Syn.TabIndex = 11;
-            this.CKB_OA_Syn.Text = "MapGIS一张图";
+            this.CKB_OA_Syn.Text = "MapGIS一张图电子政务";
             this.CKB_OA_Syn.UseVisualStyleBackColor = true;
+            this.CKB_OA_Syn.CheckedChanged += new System.EventHandler(this.CKB_OA_Syn_CheckedChanged);
             // 
             // txt_OA_DBPassword
             // 
@@ -212,6 +213,7 @@
             this.CKB_CKQ_Syn.TabIndex = 21;
             this.CKB_CKQ_Syn.Text = "采矿权数据库";
             this.CKB_CKQ_Syn.UseVisualStyleBackColor = true;
+            this.CKB_CKQ_Syn.CheckedChanged += new System.EventHandler(this.CKB_CKQ_Syn_CheckedChanged);
             // 
             // btn_MDBDbTest
             // 
@@ -276,10 +278,11 @@
             this.CKB_IGS_Syn.AutoSize = true;
             this.CKB_IGS_Syn.Location = new System.Drawing.Point(11, 0);
             this.CKB_IGS_Syn.Name = "CKB_IGS_Syn";
-            this.CKB_IGS_Syn.Size = new System.Drawing.Size(96, 16);
+            this.CKB_IGS_Syn.Size = new System.Drawing.Size(144, 16);
             this.CKB_IGS_Syn.TabIndex = 11;
-            this.CKB_IGS_Syn.Text = "MapGIS一张图";
+            this.CKB_IGS_Syn.Text = "MapGIS一张图数据中心";
             this.CKB_IGS_Syn.UseVisualStyleBackColor = true;
+            this.CKB_IGS_Syn.CheckedChanged += new System.EventHandler(this.CKB_IGS_Syn_CheckedChanged);
             // 
             // txt_IGS_PATH
             // 

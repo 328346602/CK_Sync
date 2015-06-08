@@ -76,7 +76,7 @@ namespace CK_Sync
             //判断是否要同步功能中心数据库
             bool bOASyn = Config.GetConfigValue("OASyn") == "false" ? false : true;
             CKB_OA_Syn.Checked = bOASyn;
-            btn_OADbTest.Enabled = CKB_OA_Syn.Checked;
+            btn_OADbTest.Enabled = bOASyn;
             //
             txt_OA_DBIP.Text = Config.GetConfigValue("OA_DBIP");
             txt_OA_DBIP.Enabled = bOASyn;
@@ -98,7 +98,8 @@ namespace CK_Sync
             //判断是否要同步功能中心数据库
             bool bMDBSyn = Config.GetConfigValue("MDBSyn") == "false" ? false : true;
             CKB_CKQ_Syn.Checked = bMDBSyn;
-            btn_MDBDbTest.Enabled = CKB_CKQ_Syn.Checked;
+            btn_MDBDbTest.Enabled = bMDBSyn;
+            btnOpenMDB.Enabled = bMDBSyn;
             //
             txt_MDB_DBPATH.Text = Config.GetConfigValue("MDB_PATH");
             txt_MDB_DBPATH.Enabled = bMDBSyn;
@@ -108,6 +109,8 @@ namespace CK_Sync
             bool bIGSSyn = Config.GetConfigValue("IGSSyn") == "false" ? false : true;
             CKB_IGS_Syn.Checked = bIGSSyn;
             txt_IGS_PATH.Text = Config.GetConfigValue("IGS_PATH");
+            txt_IGS_PATH.Enabled = bIGSSyn;
+            btn_IGSTest.Enabled = bIGSSyn;
             #endregion
 
         }
@@ -981,6 +984,11 @@ namespace CK_Sync
             MessageBox.Show("保存成功", "提示");
         }
 
+        /// <summary>
+        /// btn_IGSTest_Click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btn_IGSTest_Click(object sender, EventArgs e)
         {
             try
@@ -1001,12 +1009,22 @@ namespace CK_Sync
                 throw ex;
             }
         }
-
+        
+        /// <summary>
+        /// Btn_Exit_Click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Btn_Exit_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
+        /// <summary>
+        /// Btn_StartSyn_Click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Btn_StartSyn_Click(object sender, EventArgs e)
         {
             try
@@ -1027,6 +1045,44 @@ namespace CK_Sync
                 Log.WriteLog(ex.Message);
                 MessageBox.Show(errorMsg.ToString());
             }
+        }
+
+        /// <summary>
+        /// CKB_OA_Syn_CheckedChanged
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CKB_OA_Syn_CheckedChanged(object sender, EventArgs e)
+        {
+            txt_OA_DBIP.Enabled = CKB_OA_Syn.Checked;
+            txt_OA_DBName.Enabled = CKB_OA_Syn.Checked;
+            txt_OA_DBPassword.Enabled = CKB_OA_Syn.Checked;
+            txt_OA_DBPort.Enabled = CKB_OA_Syn.Checked;
+            txt_OA_DBUserName.Enabled = CKB_OA_Syn.Checked;
+            btn_OADbTest.Enabled = CKB_OA_Syn.Checked;
+        }
+
+        /// <summary>
+        /// CKB_CKQ_Syn_CheckedChanged
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CKB_CKQ_Syn_CheckedChanged(object sender, EventArgs e)
+        {
+            txt_MDB_DBPATH.Enabled = CKB_CKQ_Syn.Checked;
+            btn_MDBDbTest.Enabled = CKB_CKQ_Syn.Checked;
+            btnOpenMDB.Enabled = CKB_CKQ_Syn.Checked;
+        }
+
+        /// <summary>
+        /// CKB_IGS_Syn_CheckedChanged
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CKB_IGS_Syn_CheckedChanged(object sender, EventArgs e)
+        {
+            txt_IGS_PATH.Enabled = CKB_IGS_Syn.Checked;
+            btn_IGSTest.Enabled = CKB_IGS_Syn.Checked;
         }
 
     }
