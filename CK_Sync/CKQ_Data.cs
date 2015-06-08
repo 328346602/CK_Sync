@@ -1000,9 +1000,8 @@ namespace CK_Sync
             }
         }
 
-        
-
-        public override string ToString()
+        /* 重写ToString()方法
+         * public override string ToString()
         {
             StringBuilder toString = new StringBuilder(); 
             toString.Append("\r\nCK_GUID>>>>" + this.CK_GUID);//1
@@ -1044,33 +1043,8 @@ namespace CK_Sync
             toString.Append("\r\n"+"===========================================================");
             return toString.ToString();
         }
+         * */
 
-        //用户所属组路径信息链表
-        private IList<string> groupPaths;
+    }
 
-        private IList<string> GroupPaths
-        {
-            get { return groupPaths; }
-            set { groupPaths = value; }
-        }
-        //用户所属OU路径的信息链表
-        private string ouPath;
-
-        public string OuPath
-        {
-            get { return ouPath; }
-            set { ouPath = value; }
-        }
-
-        //属性
-        private Dictionary<string, string> attribes;
-
-        public Dictionary<string, string> Attribes
-        {
-            get { return attribes; }
-            set { attribes = value; }
-        }
-
-    }//public class UserInfo
-
-}//namespace ADCls
+}
