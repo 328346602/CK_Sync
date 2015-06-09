@@ -19,9 +19,6 @@ namespace CK_Sync
 
         SynPromptDlg frmSyn = new SynPromptDlg();
 
-        string errorMsg = string.Empty;
-        string strLayerShortName = "CKSQDJ";
-
         public MainFrm()
         {
             InitializeComponent();
@@ -78,7 +75,7 @@ namespace CK_Sync
         }
 
         /// <summary>
-        /// 
+        /// 保存配置信息
         /// </summary>
         private void SaveConfig()
         {
@@ -125,7 +122,7 @@ namespace CK_Sync
         }
 
         /// <summary>
-        /// 
+        /// 同步方法
         /// </summary>
         private void SynDatas()
         {
@@ -175,7 +172,7 @@ namespace CK_Sync
                             }
                             else
                             {
-                                MessageBox.Show(errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show(Sync.errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
                             }
                         }
@@ -191,7 +188,7 @@ namespace CK_Sync
                             }
                             else
                             {
-                                MessageBox.Show(errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show(Sync.errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
                             }
                         }
@@ -260,6 +257,16 @@ namespace CK_Sync
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void MainFrm_Load(object sender, EventArgs e)
+        {
+            GetConfigValue();            
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btn_OADbTest_Click(object sender, EventArgs e)
         {
             try
@@ -287,16 +294,6 @@ namespace CK_Sync
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void MainFrm_Load(object sender, EventArgs e)
-        {
-            GetConfigValue();            
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void btnOpenMDB_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileName = new OpenFileDialog();
@@ -307,6 +304,32 @@ namespace CK_Sync
             {
                 txt_MDB_DBPATH.Text = fileName.FileName.ToString();
                 //mdbPath = fileName.FileName.ToString();//获取用户选择文件的完整路径
+            }
+        }
+
+        /// <summary>
+        /// btn_IGSTest_Click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btn_IGSTest_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string sMessage = "";
+                bool b = Sync.TestIGS(txt_IGS_PATH.Text, ref sMessage);
+                if (b)
+                {
+                    MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -348,42 +371,6 @@ namespace CK_Sync
         }
 
         /// <summary>
-        /// btn_IGSTest_Click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btn_IGSTest_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string sMessage = "";
-                bool b = Sync.TestIGS(txt_IGS_PATH.Text, ref sMessage);
-                if (b)
-                {
-                    MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        
-        /// <summary>
-        /// Btn_Exit_Click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Btn_Exit_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        /// <summary>
         /// Btn_StartSyn_Click
         /// </summary>
         /// <param name="sender"></param>
@@ -406,8 +393,18 @@ namespace CK_Sync
             {
                 //throw ex;
                 Log.WriteLog(ex.Message);
-                MessageBox.Show(errorMsg.ToString());
+                MessageBox.Show(Sync.errorMsg.ToString());
             }
+        }
+
+        /// <summary>
+        /// Btn_Exit_Click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Btn_Exit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
 
         /// <summary>

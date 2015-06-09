@@ -12,6 +12,7 @@ namespace CK_Sync
         public static string errorMsg = string.Empty;
         public static string strLayerShortName = "CKSQDJ";
 
+        #region 测试IGS服务是否可用
         /// <summary>
         /// 测试IGS服务是否正常
         /// </summary>
@@ -52,6 +53,7 @@ namespace CK_Sync
                 throw ex;
             }
         }
+        #endregion
 
         #region 同步电子政务数据
         /// <summary>
@@ -70,7 +72,6 @@ namespace CK_Sync
                 string mdbSQL = "select * from 采矿申请登记 where 签发时间 is not null";
                 DataTable dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
                 DataRow dr = null;
-                //DataRow temp = null;
                 string oraSQL = string.Empty;
                 string upSQL = string.Empty;
 
@@ -78,11 +79,8 @@ namespace CK_Sync
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     dr = dt.Rows[i];
-                    //oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间 is not null and to_char(签发时间,'yyyy-mm-dd,hh:mi:ss')='" + dr["签发时间"] + "'";
                     oraSQL = "select * from 采矿申请登记 where 项目档案号='" + dr["项目档案号"] + "' and 签发时间=to_date('" + dr["签发时间"] + "','yyyy-mm-dd hh24:mi:ss')";
-                    //Log.WriteLog(oraSQL);
                     DataSet ds = dbORA.GetDataSet(oraSQL);
-
                     if (!(ds.Tables[0].Rows.Count > 0))
                     {
                         upSQL = UpdateSQL(dr, "采矿申请登记");
@@ -257,24 +255,10 @@ namespace CK_Sync
         {
             try
             {
-                bool b = true;
+                bool b = false;
                 string strWhere = "项目档案号='" + dr["项目档案号"] + "' and 签发时间=‘" + dr["签发时间"] + "'";
-                b = f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere) && b;
-                #region Debug
-                //Log.WriteLog(GetCKFormattedDotString(dr["区域坐标"].ToString()));
-                #endregion
-                //Log.WriteLog(b.ToString()+">>>>IsFeatureExitCKSQDJ执行成功>>>>" + strWhere);
+                b = f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere);
                 return b;
-
-                //#region Debug
-                //bool b = true;
-                //string strWhere = "项目档案号='1111' and 签发时间=‘2012-04-04 00:00:00'";
-                //b = f.IsFeatureExistNew("两矿", "layerShortName="+strLayerShortName, strWhere);
-
-
-                //Log.WriteLog("IsFeatureExitCKSQDJ执行成功>>>>");
-                //return b;
-                //#endregion
             }
             catch (Exception ex)
             {
@@ -438,10 +422,10 @@ namespace CK_Sync
                 string strWhere = "项目档案号='" + dr["项目档案号"].ToString() + "'";
                 //Log.WriteLog("strWhere>>>>" + strWhere);
                 #region 要素存在时，删除
-                //if (f.IsFeatureExistNew("两矿","layerShortName="+strLayerShortName,strWhere))
-                //{
-                b = f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere) && b;
-                //}
+                if (f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere))
+                {
+                    b = f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere) && b;
+                }
                 #endregion
                 return b;
             }
