@@ -910,6 +910,19 @@ namespace CK_Sync
             this.bDebug = b;
         }
 
+
+        /// <summary>
+        /// Debug
+        /// </summary>
+        /// <param name="sMsg"></param>
+        private void Debug(string sMsg)
+        {
+            if (this.bDebug)
+            {
+                Log.WriteDebug(sMsg);
+            }
+        }
+
         /* 重写ToString()方法
          * public override string ToString()
         {
@@ -1602,7 +1615,8 @@ namespace CK_Sync
             { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
             else if (strDotString.EndsWith(" "))
             { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
-
+            //输出Debug
+            Debug(strDotString);
             return strDotString;
         }
         #endregion
