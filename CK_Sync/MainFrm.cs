@@ -259,7 +259,7 @@ namespace CK_Sync
         /// <param name="e"></param>
         private void MainFrm_Load(object sender, EventArgs e)
         {
-            GetConfigValue();            
+            GetConfigValue();
         }
 
         /// <summary>

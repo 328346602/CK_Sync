@@ -1621,6 +1621,78 @@ namespace CK_Sync
         }
         #endregion
 
+        #region 采探矿数据库坐标格式化(去带号)
+        /// <summary>
+        /// 格式化采矿权数据库中储存的坐标串(去带号)
+        /// </summary>
+        /// <param name="strDot">坐标串</param>
+        /// <returns>格式化后的坐标串</returns>
+        private string GetCKFormattedDotStringDH(string strDot)
+        {
+            ///从成员变量中取坐标
+            //string strDot = this.DR["区域坐标"].ToString();
+            Debug(strDot);
+            if (string.IsNullOrEmpty(strDot))
+            {
+                return "";
+            }
+
+            string[] strDots = strDot.Split(',');
+            int iPlotNo = int.Parse(strDots[0]);        //圈数
+            int iCurIndex = 1;
+            string strDotString = "";
+
+            for (int i = 0; i < iPlotNo; i++)
+            {
+                try
+                {
+                    int iPointNo = int.Parse(strDots[iCurIndex]);
+                    iCurIndex += 2;
+
+
+                    for (int j = 0; j < iPointNo; j++)
+                    {
+                        strDotString += strDots[iCurIndex] + "," + strDots[iCurIndex + 1].Substring(1, strDots[iCurIndex + 1].Length) + " ";
+                        //strDotString += strDots[iCurIndex+1] + "," + strDots[iCurIndex] + " ";
+                        iCurIndex += 3;
+                    }
+
+                    if (strDotString.EndsWith(" "))
+                    { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+
+                    if ((iCurIndex + 3 + 1) < strDots.Length)
+                    {
+                        int iPointTag = int.Parse(strDots[iCurIndex + 3]);
+                        if ((iCurIndex + iPointTag * 3 + 7 + 1) < strDots.Length)
+                        {
+                            if (strDots[iCurIndex + iPointTag * 3 + 7] == "-1")
+                            {
+                                strDotString += "@";
+                            }
+                            else
+                            {
+                                strDotString += "#";
+                            }
+                        }
+                    }
+                    //strDotString += "@";
+                    iCurIndex += 3;
+                }
+                catch (Exception oExcept)
+                {
+                    Log.WriteLog("采矿权数据库坐标解析问题：" + oExcept.Message);
+                }
+            }
+
+            if (strDotString.EndsWith("@"))
+            { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+            else if (strDotString.EndsWith(" "))
+            { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+            //输出Debug
+            Debug(strDotString);
+            return strDotString;
+        }
+        #endregion
 
         private void Error(Exception ex)
         {
