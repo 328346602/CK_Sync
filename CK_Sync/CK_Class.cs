@@ -831,6 +831,14 @@ namespace CK_Sync
         private DataRow DR;
 
         /// <summary>
+        /// 不带参数的构造函数
+        /// </summary>
+        public CK()
+        {
+
+        }
+
+        /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="dr"></param>
@@ -1340,7 +1348,7 @@ namespace CK_Sync
                     #region 插入记录
                     //Log.WriteLog("AddFeatureNew");
                     ///尝试插入数据
-                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString()), attField, attValue))
+                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString(),false), attField, attValue))
                     {
                         b = true;
                     }
@@ -1348,15 +1356,6 @@ namespace CK_Sync
                     {
                         b = false;
                     }
-                    #endregion
-
-                    #region UpdateFeature.Debug
-                    //for (int i = 0; i < attField.Length;i++ )
-                    //    Log.WriteLog(attField[i].ToString());
-
-                    //Log.WriteLog("===========================================================");
-                    //for (int i = 0; i < attValue.Length;i++ )
-                    //    Log.WriteLog(attValue[i].ToString());
                     #endregion
                 }
                 return b;
@@ -1551,6 +1550,26 @@ namespace CK_Sync
         }
         #endregion
 
+        public string GetCKFormattedDotString(string strDot,bool DH)
+        {
+            try
+            {
+                if(DH)
+                {
+                    return GetCKFormattedDotString(strDot);
+                }
+                else
+                {
+                    return GetCKFormattedDotStringWithoutDH(strDot);
+                }
+            }
+            catch(Exception ex)
+            {
+                Error(ex);
+                throw ex;
+            }
+        }
+
         #region 采探矿数据库坐标格式化
         /// <summary>
         /// 格式化采矿权数据库中储存的坐标串
@@ -1627,7 +1646,7 @@ namespace CK_Sync
         /// </summary>
         /// <param name="strDot">坐标串</param>
         /// <returns>格式化后的坐标串</returns>
-        private string GetCKFormattedDotStringDH(string strDot)
+        private string GetCKFormattedDotStringWithoutDH(string strDot)
         {
             ///从成员变量中取坐标
             //string strDot = this.DR["区域坐标"].ToString();
@@ -1652,7 +1671,7 @@ namespace CK_Sync
 
                     for (int j = 0; j < iPointNo; j++)
                     {
-                        strDotString += strDots[iCurIndex] + "," + strDots[iCurIndex + 1].Substring(1, strDots[iCurIndex + 1].Length) + " ";
+                        strDotString += strDots[iCurIndex] + "," + strDots[iCurIndex + 1].Substring(2, strDots[iCurIndex + 1].Length-2) + " ";
                         //strDotString += strDots[iCurIndex+1] + "," + strDots[iCurIndex] + " ";
                         iCurIndex += 3;
                     }

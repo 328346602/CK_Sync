@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK_Sync", "CK_Sync\CK_Sync.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CM.Map", "CM.Map\CM.Map.csproj", "{4FC6C9C9-4100-4073-90E7-69D78FC06327}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugConsole", "DebugConsole\DebugConsole.csproj", "{D0E4E44A-BE95-46E5-88DE-A9517F9CE9F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4FC6C9C9-4100-4073-90E7-69D78FC06327}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FC6C9C9-4100-4073-90E7-69D78FC06327}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FC6C9C9-4100-4073-90E7-69D78FC06327}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0E4E44A-BE95-46E5-88DE-A9517F9CE9F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0E4E44A-BE95-46E5-88DE-A9517F9CE9F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0E4E44A-BE95-46E5-88DE-A9517F9CE9F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0E4E44A-BE95-46E5-88DE-A9517F9CE9F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
