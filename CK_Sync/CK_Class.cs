@@ -818,7 +818,7 @@ namespace CK_Sync
         /// <summary>
         /// 采矿权数据所在图层的图层简称<LayerShortName></LayerShortName>
         /// </summary>
-        private string strLayerShortName = "CKSQDJ";
+        private static string strLayerShortName = "CKSQDJ";
 
         /// <summary>
         /// 调试开关
@@ -918,6 +918,18 @@ namespace CK_Sync
             this.bDebug = b;
         }
 
+        public static void ChangeLayer(string layerShortName)
+        {
+            try
+            {
+                strLayerShortName = layerShortName;
+            }
+            catch(Exception ex)
+            {
+                
+                throw ex;
+            }
+        }
 
         /// <summary>
         /// Debug
@@ -925,9 +937,16 @@ namespace CK_Sync
         /// <param name="sMsg"></param>
         private void Debug(string sMsg)
         {
-            if (this.bDebug)
+            try
             {
-                Log.WriteDebug(sMsg);
+                if (this.bDebug)
+                {
+                    Log.WriteDebug(sMsg);
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -984,7 +1003,7 @@ namespace CK_Sync
         /// <param name="IGS_PATH">IGS服务所在的服务器IP</param>
         /// <param name="Message">提示信息</param>
         /// <returns></returns>
-        public bool TestIGS(string IGS_PATH, ref string sMsg)
+        public static bool TestIGS(string IGS_PATH, ref string sMsg)
         {
             try
             {
@@ -1222,7 +1241,7 @@ namespace CK_Sync
             {
                 bool b = false;
                 string strWhere = "项目档案号='" + dr["项目档案号"] + "' and 签发时间=‘" + dr["签发时间"] + "'";
-                b = f.IsFeatureExistNew("两矿", "layerShortName=" + this.strLayerShortName, strWhere);
+                b = f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere);
                 return b;
             }
             catch (Exception ex)
@@ -1378,9 +1397,9 @@ namespace CK_Sync
                 string strWhere = "项目档案号='" + dr["项目档案号"].ToString() + "'";
                 //Log.WriteLog("strWhere>>>>" + strWhere);
                 #region 要素存在时，删除
-                if (f.IsFeatureExistNew("两矿", "layerShortName=" + this.strLayerShortName, strWhere))
+                if (f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere))
                 {
-                    b = f.DelFeatureNew("两矿", "layerShortName=" + this.strLayerShortName, 0, strWhere) && b;
+                    b = f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere) && b;
                 }
                 #endregion
                 return b;
@@ -1713,12 +1732,8 @@ namespace CK_Sync
         }
         #endregion
 
-        private void Error(Exception ex)
+        private static void Error(Exception ex)
         {
-            if (this.bDebug)
-            {
-                CM.Map.Log.WriteError(ex.Message);
-            }
             Log.WriteException(ex);
         }
     }

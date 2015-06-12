@@ -227,6 +227,111 @@ namespace CK_Sync
             
         }
 
+        private void SyncData()
+        {
+            try
+            {
+                DialogResult ret = MessageBox.Show("同步之前请检查、测试各项设置并保存！", "注意", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (ret == DialogResult.Yes)
+                {
+                    DatabaseOledb dbMDB = new DatabaseOledb(CM.Map.Config.GetConfigValue("MDB_ConnectString"));//MDB连接
+                    #region Oracle连接串StringBuilder ora_Conn
+                    StringBuilder ora_Conn = new StringBuilder("Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=");
+                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBIP"));
+                    ora_Conn.Append(")(PORT=");
+                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBPort"));
+                    ora_Conn.Append(")))(CONNECT_DATA=(SERVICE_NAME=");
+                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBName"));
+                    ora_Conn.Append(")));User Id=");
+                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBUserName"));
+                    ora_Conn.Append(";Password=");
+                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBPassword"));
+                    ora_Conn.Append(";");
+                    #endregion
+
+                    DatabaseORC dbORA = new DatabaseORC(ora_Conn.ToString());
+
+                    #region 同步数据
+
+                    string IGSUri = Config.GetConfigValue("IGS_PATH");
+
+                    #region MDBSyn=false
+                    if (Config.GetConfigValue("MDBSyn") == "false")
+                    {
+                        MessageBox.Show("请检查采矿权数据库配置并保存!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+                    #endregion
+
+                    #region OASyn=true
+                    else if (Config.GetConfigValue("OASyn") == "true")
+                    {
+                        #region OASyn/IGSSyn都为true
+                        if (Config.GetConfigValue("IGSSyn") == "true")
+                        {
+                            if (Sync.SynORA(dbORA, dbMDB) && Sync.SynIGS(dbMDB, IGSUri))
+                            {
+                                MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
+                                return;
+                            }
+                            else
+                            {
+                                MessageBox.Show(Sync.errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                        }
+                        #endregion
+
+                        #region IGSSyn为false
+                        else
+                        {
+                            if (Sync.SynORA(dbORA, dbMDB))
+                            {
+                                MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
+                                return;
+                            }
+                            else
+                            {
+                                MessageBox.Show(Sync.errorMsg.ToString(), "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                        }
+                        #endregion
+                    }
+                    #endregion
+
+                    #region OASyn=false/IGSSyn=true
+                    else if (Config.GetConfigValue("IGSSyn") == "true")
+                    {
+                        if (Sync.SynIGS(dbMDB, IGSUri))
+                        {
+                            MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
+                            return;
+                        }
+                        else
+                        {
+                            MessageBox.Show("图形同步失败，请检查配置并保存！", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            //Log.WriteLog("IGSSyn错误『OASyn=false/IGSSyn=true』>>>>" + errorMsg);
+                            return;
+                        }
+                    }
+                    #endregion
+
+                    #region MDBSyn=true&&OASyn=false&&IGSSyn=false
+                    else
+                    {
+                        MessageBox.Show("请检查MapGIS一张图政务/图形同步设置并保存!", "信息", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                        return;
+                    }
+                    #endregion
+                    #endregion
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
         /// <summary>
         /// 异步CallBack
         /// </summary>
@@ -272,7 +377,7 @@ namespace CK_Sync
             try
             {
                 string sMessage = "";
-                bool b = CM.Map.DatabaseORC.TestOracleConn(txt_OA_DBIP.Text, txt_OA_DBPort.Text, txt_OA_DBName.Text, txt_OA_DBUserName.Text, txt_OA_DBPassword.Text, ref sMessage);
+                bool b = DatabaseORC.TestOracleConn(txt_OA_DBIP.Text, txt_OA_DBPort.Text, txt_OA_DBName.Text, txt_OA_DBUserName.Text, txt_OA_DBPassword.Text, ref sMessage);
                 if (b)
                 {
                     MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -317,7 +422,7 @@ namespace CK_Sync
             try
             {
                 string sMessage = "";
-                bool b = Sync.TestIGS(txt_IGS_PATH.Text, ref sMessage);
+                bool b = CK.TestIGS(txt_IGS_PATH.Text, ref sMessage);
                 if (b)
                 {
                     MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -343,7 +448,7 @@ namespace CK_Sync
             try
             {
                 string sMessage = "";
-                bool b = CM.Map.DatabaseOledb.TestAccessConn(txt_MDB_DBPATH.Text, ref sMessage);
+                bool b = DatabaseOledb.TestAccessConn(txt_MDB_DBPATH.Text, ref sMessage);
                 if (b)
                 {
                     MessageBox.Show(sMessage, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
