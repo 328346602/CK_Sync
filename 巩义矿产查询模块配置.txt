@@ -1,0 +1,8 @@
+IGSLandService/config/global.xml中
+
+<TopRegionCode value="410000" />
+<EgovAddress address="http://192.168.1.4/owebsite/" />
+配置修改
+
+LND_REGIONCODE表
+旧版对应<数据单元表>中数据更新
