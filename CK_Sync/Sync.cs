@@ -11,6 +11,12 @@ namespace CK_Sync
     {
         public static string errorMsg = string.Empty;
         public static string strLayerShortName = "CKSQDJ";
+        private static bool Debug = false;
+
+        public static void SetDebug(bool b)
+        {
+            Debug = b;
+        }
 
         #region 测试IGS服务是否可用
         /// <summary>
@@ -62,7 +68,7 @@ namespace CK_Sync
         /// <param name="dbORA">Oracle数据库连接</param>
         /// <param name="dbMDB">mdb数据库连接</param>
         /// <returns></returns>
-        public static bool SynORA(CM.Map.DatabaseORC dbORA, CM.Map.DatabaseOledb dbMDB)
+        public static bool SynORA(DatabaseORC dbORA, DatabaseOledb dbMDB)
         {
 
             try
@@ -128,7 +134,7 @@ namespace CK_Sync
         /// <param name="dbMDB">MDB数据库对象</param>
         /// <param name="IGSUri">IGS服务地址</param>
         /// <returns></returns>
-        public static bool SynIGS(CM.Map.DatabaseOledb dbMDB, string IGSUri)
+        public static bool SynIGS(DatabaseOledb dbMDB, string IGSUri)
         {
             try
             {
@@ -145,6 +151,7 @@ namespace CK_Sync
                     try
                     {
                         dt = dbMDB.GetDataSet(mdbSQL).Tables[0];
+                        DebugInfo("查询到数据");
                     }
                     catch (Exception ex)
                     {
@@ -169,7 +176,10 @@ namespace CK_Sync
                         b = UpdateFeature(f, dr) && b;
                         //Log.WriteLog(string.Format(b.ToString() + "循环第{0}次", i + 1));
                         if (!b)
+                        {
+                            DebugInfo("UpdateFeature()失败！");
                             return b;
+                        }
                         //else
                         //    continue;
                     }
@@ -255,9 +265,11 @@ namespace CK_Sync
         {
             try
             {
+                DebugInfo("IsFeatureExitCKSQDJ()方法开始执行...");
                 bool b = false;
                 string strWhere = "项目档案号='" + dr["项目档案号"] + "' and 签发时间=‘" + dr["签发时间"] + "'";
                 b = f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere);
+                DebugInfo("结果为"+b.ToString());
                 return b;
             }
             catch (Exception ex)
@@ -279,10 +291,13 @@ namespace CK_Sync
                 bool b = false;
                 if (IsFeatureExitCKSQDJ(f, dr))
                 {
+                    DebugInfo("UpdateFeature()中判断要素已存在，不需要更新！");
                     return true;
                 }
                 else
                 {
+                    DebugInfo("UpdateFeature()中判断要素不存在，需要更新！");
+
                     #region attField
                     string[] attField ={   "项目档案号",
                                            "项目类型",
@@ -360,14 +375,18 @@ namespace CK_Sync
                     #region 存在时先删除记录
                     if (f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere))
                     {
+                        DebugInfo("同『项目档案号』要素已存在");
                         try
                         {
+                            DebugInfo("调用DelFeature()方法");
                             #region 删除对应记录
                             if (!f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere))
                             {
                                 b = false;
+                                DebugInfo(b.ToString());
                                 return b;
                             }
+                            DebugInfo(b.ToString());
                             #endregion
                         }
                         catch (Exception ex)
@@ -383,23 +402,25 @@ namespace CK_Sync
                     #region 插入记录
                     //Log.WriteLog("AddFeatureNew");
                     ///尝试插入数据
-                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString()), attField, attValue))
+                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString(),true), attField, attValue))
                     {
+                        DebugInfo("AddFeature()方法成功");
                         b = true;
                     }
                     else
                     {
+                        DebugInfo("AddFeature()方法失败");
                         b = false;
                     }
                     #endregion
 
                     #region UpdateFeature.Debug
-                    //for (int i = 0; i < attField.Length;i++ )
-                    //    Log.WriteLog(attField[i].ToString());
+                    for (int i = 0; i < attField.Length;i++ )
+                        DebugInfo(attField[i].ToString());
 
-                    //Log.WriteLog("===========================================================");
-                    //for (int i = 0; i < attValue.Length;i++ )
-                    //    Log.WriteLog(attValue[i].ToString());
+                    DebugInfo("===========================================================");
+                    for (int i = 0; i < attValue.Length;i++ )
+                        DebugInfo(attValue[i].ToString());
                     #endregion
                 }
                 return b;
@@ -663,5 +684,116 @@ namespace CK_Sync
         }
         #endregion
 
+        #region 采探矿数据库坐标格式化(去带号)
+        /// <summary>
+        /// 格式化采矿权数据库中储存的坐标串(去带号)
+        /// </summary>
+        /// <param name="strDot">坐标串</param>
+        /// <returns>格式化后的坐标串</returns>
+        private static string GetCKFormattedDotStringWithoutDH(string strDot)
+        {
+            ///从成员变量中取坐标
+            //string strDot = this.DR["区域坐标"].ToString();
+            DebugInfo(strDot);
+            if (string.IsNullOrEmpty(strDot))
+            {
+                return "";
+            }
+
+            string[] strDots = strDot.Split(',');
+            int iPlotNo = int.Parse(strDots[0]);        //圈数
+            int iCurIndex = 1;
+            string strDotString = "";
+
+            for (int i = 0; i < iPlotNo; i++)
+            {
+                try
+                {
+                    int iPointNo = int.Parse(strDots[iCurIndex]);
+                    iCurIndex += 2;
+
+
+                    for (int j = 0; j < iPointNo; j++)
+                    {
+                        strDotString += strDots[iCurIndex] + "," + strDots[iCurIndex + 1].Substring(2, strDots[iCurIndex + 1].Length - 2) + " ";
+                        //strDotString += strDots[iCurIndex+1] + "," + strDots[iCurIndex] + " ";
+                        iCurIndex += 3;
+                    }
+
+                    if (strDotString.EndsWith(" "))
+                    { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+
+                    if ((iCurIndex + 3 + 1) < strDots.Length)
+                    {
+                        int iPointTag = int.Parse(strDots[iCurIndex + 3]);
+                        if ((iCurIndex + iPointTag * 3 + 7 + 1) < strDots.Length)
+                        {
+                            if (strDots[iCurIndex + iPointTag * 3 + 7] == "-1")
+                            {
+                                strDotString += "@";
+                            }
+                            else
+                            {
+                                strDotString += "#";
+                            }
+                        }
+                    }
+                    //strDotString += "@";
+                    iCurIndex += 3;
+                }
+                catch (Exception oExcept)
+                {
+                    Log.WriteLog("采矿权数据库坐标解析问题：" + oExcept.Message);
+                }
+            }
+
+            if (strDotString.EndsWith("@"))
+            { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+            else if (strDotString.EndsWith(" "))
+            { strDotString = strDotString.Substring(0, strDotString.Length - 1); }
+            //输出Debug
+            DebugInfo(strDotString);
+            return strDotString;
+        }
+        #endregion
+
+        private static string GetCKFormattedDotString(string strDot, bool DH)
+        {
+            try
+            {
+                if (DH)
+                {
+                    return GetCKFormattedDotString(strDot);
+                }
+                else
+                {
+                    return GetCKFormattedDotStringWithoutDH(strDot);
+                }
+            }
+            catch (Exception ex)
+            {
+                //Error(ex);
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Debug
+        /// </summary>
+        /// <param name="sMsg"></param>
+        private static void DebugInfo(string sMsg)
+        {
+            try
+            {
+                if (Debug)
+                {
+                    Log.WriteDebug(sMsg);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

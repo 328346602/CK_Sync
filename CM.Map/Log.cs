@@ -58,7 +58,7 @@ namespace CM.Map
                 System.IO.Directory.CreateDirectory(path);
             }
             //string fileFullName = System.IO.Path.Combine(path, string.Format("{0}.log", DateTime.Now.ToString("yyMMdd-HHmmss")));
-            string fileFullName = System.IO.Path.Combine(path, string.Format("{0}{1}.log", DateTime.Now.ToString("yyMMdd"), type));
+            string fileFullName = System.IO.Path.Combine(path, string.Format("{0}{1}.log",type, DateTime.Now.ToString("yyMMdd")));
 
             using (StreamWriter output = System.IO.File.AppendText(fileFullName))
             {

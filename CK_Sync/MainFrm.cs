@@ -234,6 +234,8 @@ namespace CK_Sync
                 DialogResult ret = MessageBox.Show("同步之前请检查、测试各项设置并保存！", "注意", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (ret == DialogResult.Yes)
                 {
+                    Log.WriteDebug("确认");
+                    Log.WriteLog("确认");
                     DatabaseOledb dbMDB = new DatabaseOledb(CM.Map.Config.GetConfigValue("MDB_ConnectString"));//MDB连接
                     #region Oracle连接串StringBuilder ora_Conn
                     StringBuilder ora_Conn = new StringBuilder("Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=");
@@ -250,7 +252,8 @@ namespace CK_Sync
                     #endregion
 
                     DatabaseORC dbORA = new DatabaseORC(ora_Conn.ToString());
-
+                    ///开启Debug模式
+                    Sync.SetDebug(true);
                     #region 同步数据
 
                     string IGSUri = Config.GetConfigValue("IGS_PATH");
@@ -269,6 +272,7 @@ namespace CK_Sync
                         #region OASyn/IGSSyn都为true
                         if (Config.GetConfigValue("IGSSyn") == "true")
                         {
+                            
                             if (Sync.SynORA(dbORA, dbMDB) && Sync.SynIGS(dbMDB, IGSUri))
                             {
                                 MessageBox.Show("成功!", "同步成功", MessageBoxButtons.OK, MessageBoxIcon.None);
@@ -485,8 +489,8 @@ namespace CK_Sync
             try
             {
 
-                SyncEventHandler syncEn = new SyncEventHandler(SynDatas);
-
+                //SyncEventHandler syncEn = new SyncEventHandler(SynDatas);
+                SyncEventHandler syncEn = new SyncEventHandler(SyncData);
                 syncEn.BeginInvoke(new AsyncCallback(RunCallBack), null);
 
                 frmSyn.sMessage = "操作正在执行中,请稍候...";
