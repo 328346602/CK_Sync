@@ -11,6 +11,7 @@ namespace CK_Sync
     {
         public static string errorMsg = string.Empty;
         public static string strLayerShortName = "CKSQDJ";
+        public static string strLayerShortName = "CKQSQDJ";
         private static bool Debug = false;
 
         public static void SetDebug(bool b)
@@ -268,7 +269,6 @@ namespace CK_Sync
                 DebugInfo("IsFeatureExitCKSQDJ()方法开始执行...");
                 bool b = false;
                 string strWhere = "项目档案号='" + dr["项目档案号"] + "' and 签发时间=‘" + dr["签发时间"] + "'";
-                b = f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere);
                 DebugInfo("结果为"+b.ToString());
                 return b;
             }
@@ -403,6 +403,7 @@ namespace CK_Sync
                     //Log.WriteLog("AddFeatureNew");
                     ///尝试插入数据
                     if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString(),true), attField, attValue))
+                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString(),false), attField, attValue))
                     {
                         DebugInfo("AddFeature()方法成功");
                         b = true;
@@ -757,6 +758,12 @@ namespace CK_Sync
         }
         #endregion
 
+        /// <summary>
+        /// 采矿权数据库坐标格式化方法
+        /// </summary>
+        /// <param name="strDot">传入区域坐标字段值</param>
+        /// <param name="DH">true为带带号，false为不带带号</param>
+        /// <returns></returns>
         private static string GetCKFormattedDotString(string strDot, bool DH)
         {
             try

@@ -818,7 +818,7 @@ namespace CK_Sync
         /// <summary>
         /// 采矿权数据所在图层的图层简称<LayerShortName></LayerShortName>
         /// </summary>
-        private static string strLayerShortName = "CKSQDJ";
+        private static string strLayerShortName = "CKQSQDJ";
 
         /// <summary>
         /// 调试开关
