@@ -128,6 +128,19 @@ namespace CM.Map
             }
         }
 
+        public bool DelFeature(string solutionName, string inputAtt, string strWhere)
+        {
+            try
+            {
+                bool b;
+                b = f.DelFeatureNew(solutionName,inputAtt,0,strWhere);
+                return b;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         //public static void Main(string[] args)
         //{

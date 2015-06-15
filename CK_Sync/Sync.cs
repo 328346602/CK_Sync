@@ -10,7 +10,6 @@ namespace CK_Sync
     class Sync
     {
         public static string errorMsg = string.Empty;
-        public static string strLayerShortName = "CKSQDJ";
         public static string strLayerShortName = "CKQSQDJ";
         private static bool Debug = false;
 
@@ -35,7 +34,7 @@ namespace CK_Sync
                     WebFeature.Feature f = new WebFeature.Feature();
                     f.Url = "http://" + Config.GetConfigValue("IGS_PATH") + "//IGSLandService//Feature.asmx";
                     //bool b = Boolean.Parse(f.GetLayerAttCountNew("两矿","layerShortName="+strLayerShortName,"项目档案号 is not null").ToString());
-                    bool b = Boolean.Parse(f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, "项目档案号 is not null").ToString());
+                    bool b = Boolean.Parse(f.IsFeatureExistNew("两矿", "subjectType=CK&layerShortName=" + strLayerShortName, "项目档案号 is not null").ToString());
                     if (b)
                     {
                         Message = "连接成功";
@@ -267,9 +266,10 @@ namespace CK_Sync
             try
             {
                 DebugInfo("IsFeatureExitCKSQDJ()方法开始执行...");
-                bool b = false;
-                string strWhere = "项目档案号='" + dr["项目档案号"] + "' and 签发时间=‘" + dr["签发时间"] + "'";
-                DebugInfo("结果为"+b.ToString());
+                //bool b = false;
+                string strWhere = "项目档案号='" + dr["项目档案号"].ToString() + "' and 签发时间='" + dr["签发时间"].ToString() + "'";
+                bool b = f.IsFeatureExistNew("两矿","subjectType=CK&layerShortName=CKQSQDJ",strWhere);
+                DebugInfo("【"+strWhere+"】结果为" + b.ToString());
                 return b;
             }
             catch (Exception ex)
@@ -299,94 +299,104 @@ namespace CK_Sync
                     DebugInfo("UpdateFeature()中判断要素不存在，需要更新！");
 
                     #region attField
-                    string[] attField ={   "项目档案号",
-                                           "项目类型",
-                                           "申请人",
-                                           "电话",
-                                           "地址",
-                                           "邮编",
-                                           "矿山名称",
-                                           "经济类型",
-                                           "项目审批机关",
-                                           "批准文号",
-                                           "资金来源",
-                                           "设计年限",
-                                           "开采主矿种",
-                                           "设计规模",
-                                           "规模单位",
-                                           "开采方式",
-                                           "采矿方法",
-                                           "选矿方法",
-                                           "应缴纳采矿权价款",
-                                           "采深上限",
-                                           "采深下限",
-                                           "矿区面积",
-                                           "采矿权使用费",
-                                           "有效期限",
-                                           "有效期起",
-                                           "有效期止",
-                                           "矿区编码",
-                                           "原许可证号",
-                                           "发证机关名称",
-                                           "区域坐标",
-                                           "设计利用储量",
-                                           "其它主矿种",
-                                           "签发时间"};
+                    string[] attField ={"CK_GUID",
+                                        "申请序号",
+                                        "许可证号",
+                                        "项目档案号",
+                                        "项目类型",
+                                        "申请人",
+                                        "电话",
+                                        "地址",
+                                        "邮编",
+                                        "矿山名称",
+                                        "经济类型",
+                                        "项目审批机关",
+                                        "批准文号",
+                                        "资金来源",
+                                        "设计年限",
+                                        "开采主矿种",
+                                        "其它主矿种",
+                                        "设计规模",
+                                        "规模单位",
+                                        "开采方式",
+                                        "采矿方法",
+                                        "选矿方法",
+                                        "应缴纳采矿权价款",
+                                        "采深上限",
+                                        "采深下限",
+                                        "矿区面积",
+                                        "采矿权使用费",
+                                        "有效期限",
+                                        "有效期起",
+                                        "有效期止",
+                                        "矿区编码",
+                                        "原许可证号",
+                                        "发证机关名称",
+                                        "区域坐标",
+                                        "设计利用储量",
+                                        "坐标系统",
+                                        "签发时间"};
+                                        
                     #endregion
 
                     #region attValue
-                    string[] attValue = {   dr["项目档案号"].ToString(),
-                                            dr["项目类型"].ToString(),
-                                            dr["申请人"].ToString(),
-                                            dr["电话"].ToString(),
-                                            dr["地址"].ToString(), 
-                                            dr["邮编"].ToString(),
-                                            dr["矿山名称"].ToString(),
-                                            dr["经济类型"].ToString(),
-                                            dr["项目审批机关"].ToString(),
-                                            dr["批准文号"].ToString(),
-                                            dr["资金来源"].ToString(),
-                                            dr["设计年限"].ToString(),
-                                            dr["开采主矿种"].ToString(),
-                                            dr["设计规模"].ToString(),
-                                            dr["规模单位"].ToString(),
-                                            dr["开采方式"].ToString(),
-                                            dr["采矿方法"].ToString(),
-                                            dr["选矿方法"].ToString(),
-                                            dr["应缴纳采矿权价款"].ToString(),
-                                            dr["采深上限"].ToString(),
-                                            dr["采深下限"].ToString(),
-                                            dr["矿区面积"].ToString(),
-                                            dr["采矿权使用费"].ToString(),
-                                            dr["有效期限"].ToString(),
-                                            dr["有效期起"].ToString(),
-                                            dr["有效期止"].ToString(),
-                                            dr["矿区编码"].ToString(),
-                                            dr["原许可证号"].ToString(),
-                                            dr["发证机关名称"].ToString(),
-                                            dr["区域坐标"].ToString(),
-                                            dr["设计利用储量"].ToString(),
-                                            dr["其它主矿种"].ToString(),
-                                            dr["签发时间"].ToString()};
+                    string[] attValue = { dr["CK_GUID"].ToString(),
+                                          dr["申请序号"].ToString(),
+                                          dr["许可证号"].ToString(),
+                                          dr["项目档案号"].ToString(),
+                                          dr["项目类型"].ToString(),
+                                          dr["申请人"].ToString(),
+                                          dr["电话"].ToString(),
+                                          dr["地址"].ToString(),
+                                          dr["邮编"].ToString(),
+                                          dr["矿山名称"].ToString(),
+                                          dr["经济类型"].ToString(),
+                                          dr["项目审批机关"].ToString(),
+                                          dr["批准文号"].ToString(),
+                                          dr["资金来源"].ToString(),
+                                          dr["设计年限"].ToString(),
+                                          dr["开采主矿种"].ToString(),
+                                          dr["其它主矿种"].ToString(),
+                                          dr["设计规模"].ToString(),
+                                          dr["规模单位"].ToString(),
+                                          dr["开采方式"].ToString(),
+                                          dr["采矿方法"].ToString(),
+                                          dr["选矿方法"].ToString(),
+                                          dr["应缴纳采矿权价款"].ToString(),
+                                          dr["采深上限"].ToString(),
+                                          dr["采深下限"].ToString(),
+                                          dr["矿区面积"].ToString(),
+                                          dr["采矿权使用费"].ToString(),
+                                          dr["有效期限"].ToString(),
+                                          dr["有效期起"].ToString(),
+                                          dr["有效期止"].ToString(),
+                                          dr["矿区编码"].ToString(),
+                                          dr["原许可证号"].ToString(),
+                                          dr["发证机关名称"].ToString(),
+                                          dr["区域坐标"].ToString(),
+                                          dr["设计利用储量"].ToString(),
+                                          dr["坐标系统"].ToString(),
+                                          dr["签发时间"].ToString()};
+
                     #endregion
 
                     #region 判断当前『项目档案号』是否存在于图层中
                     string strWhere = "项目档案号='" + dr["项目档案号"].ToString() + "'";
                     #region 存在时先删除记录
-                    if (f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere))
+                    if (f.IsFeatureExistNew("两矿", "subjectType=CK&layerShortName=" + strLayerShortName, strWhere))
                     {
                         DebugInfo("同『项目档案号』要素已存在");
                         try
                         {
                             DebugInfo("调用DelFeature()方法");
                             #region 删除对应记录
-                            if (!f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere))
+                            b = f.DelFeatureNew("两矿", "subjectType=CK&layerShortName=" + strLayerShortName, 0, strWhere);
+                            DebugInfo(b.ToString());
+                            if(!b)
                             {
-                                b = false;
-                                DebugInfo(b.ToString());
                                 return b;
                             }
-                            DebugInfo(b.ToString());
+                            
                             #endregion
                         }
                         catch (Exception ex)
@@ -402,8 +412,7 @@ namespace CK_Sync
                     #region 插入记录
                     //Log.WriteLog("AddFeatureNew");
                     ///尝试插入数据
-                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString(),true), attField, attValue))
-                    if (f.AddFeatureNew("两矿", "layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString(),false), attField, attValue))
+                    if (f.AddFeatureNew("两矿", "subjectType=CK&layerShortName=" + strLayerShortName, GetCKFormattedDotString(dr["区域坐标"].ToString(), true), attField, attValue))
                     {
                         DebugInfo("AddFeature()方法成功");
                         b = true;
@@ -415,13 +424,14 @@ namespace CK_Sync
                     }
                     #endregion
 
+                    DebugInfo("项目档案号="+dr["项目档案号"].ToString());
                     #region UpdateFeature.Debug
-                    for (int i = 0; i < attField.Length;i++ )
-                        DebugInfo(attField[i].ToString());
+                    for (int i = 0; i < attField.Length; i++)
+                        DebugInfo(attField[i].ToString()+">>>>"+attValue[i].ToString());
 
                     DebugInfo("===========================================================");
-                    for (int i = 0; i < attValue.Length;i++ )
-                        DebugInfo(attValue[i].ToString());
+                    //for (int i = 0; i < attValue.Length; i++)
+                    //    DebugInfo(attValue[i].ToString());
                     #endregion
                 }
                 return b;
@@ -444,11 +454,19 @@ namespace CK_Sync
                 string strWhere = "项目档案号='" + dr["项目档案号"].ToString() + "'";
                 //Log.WriteLog("strWhere>>>>" + strWhere);
                 #region 要素存在时，删除
-                if (f.IsFeatureExistNew("两矿", "layerShortName=" + strLayerShortName, strWhere))
+                if (f.IsFeatureExistNew("两矿", "subjectType=CK&layerShortName=" + strLayerShortName, strWhere))
                 {
-                    b = f.DelFeatureNew("两矿", "layerShortName=" + strLayerShortName, 0, strWhere) && b;
+                    b = f.DelFeatureNew("两矿", "subjectType=CK&layerShortName=" + strLayerShortName, 0, strWhere) && b;
                 }
                 #endregion
+                if(b)
+                {
+                    DebugInfo("DelFeatureNew()>>>>"+b.ToString());
+                }
+                else
+                {
+                    DebugInfo("DelFeatureNew()>>>>"+b.ToString());
+                }
                 return b;
             }
             catch (Exception ex)

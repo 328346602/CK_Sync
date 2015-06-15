@@ -99,21 +99,29 @@ namespace DebugConsole
                 string strSubject = "两矿";
                 string strInputAtt = "subjectType=CK&layerShortName=CKQSQDJ";
                 string strDotString="3829489.86,413197.70 3829524.86,413289.69 3829363.86,413356.69 3829330.87,413244.69";
-                if (f.IsFeatureExist(strSubject, strInputAtt, "项目档案号='4101810310029''"))
+                //if (f.IsFeatureExist(strSubject, strInputAtt, "项目档案号='4101810310029' and 签发时间='2011-08-12 00:00:00'"))
+                //{
+                //    Console.WriteLine("IsFeatureNew()=true");
+                //}
+                //else
+                //{
+                //    Console.WriteLine("IsFeatureNew()=false");
+                //}
+                //if (f.AddFeature(strSubject, strInputAtt, strDotString, field, value))
+                //{
+                //    Console.WriteLine("AddFeatureNew()=true");
+                //}
+                //else
+                //{
+                //    Console.WriteLine("AddFeatureNew()=false");
+                //}
+                if (f.DelFeature(strSubject, strInputAtt, "项目档案号='4101810310029' and 签发时间='2011-08-12 00:00:00'"))
                 {
-                    Console.WriteLine("IsFeatureNew()=true");
+                    Console.WriteLine("DelFeatureNew()=true");
                 }
                 else
                 {
-                    Console.WriteLine("IsFeatureNew()=false");
-                }
-                if (f.AddFeature(strSubject, strInputAtt, strDotString, field, value))
-                {
-                    Console.WriteLine("AddFeatureNew()=true");
-                }
-                else
-                {
-                    Console.WriteLine("AddFeatureNew()=false");
+                    Console.WriteLine("DelFeatureNew()=false");
                 }
                 #endregion
                 Console.ReadKey();

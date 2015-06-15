@@ -234,8 +234,8 @@ namespace CK_Sync
                 DialogResult ret = MessageBox.Show("同步之前请检查、测试各项设置并保存！", "注意", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (ret == DialogResult.Yes)
                 {
-                    Log.WriteDebug("确认");
-                    Log.WriteLog("确认");
+                    //Log.WriteDebug("确认");
+                    //Log.WriteLog("确认");
                     DatabaseOledb dbMDB = new DatabaseOledb(CM.Map.Config.GetConfigValue("MDB_ConnectString"));//MDB连接
                     #region Oracle连接串StringBuilder ora_Conn
                     StringBuilder ora_Conn = new StringBuilder("Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=");
