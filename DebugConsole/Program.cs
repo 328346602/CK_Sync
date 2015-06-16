@@ -115,14 +115,18 @@ namespace DebugConsole
                 //{
                 //    Console.WriteLine("AddFeatureNew()=false");
                 //}
-                if (f.DelFeature(strSubject, strInputAtt, "项目档案号='4101810310029' and 签发时间='2011-08-12 00:00:00'"))
-                {
-                    Console.WriteLine("DelFeatureNew()=true");
-                }
-                else
-                {
-                    Console.WriteLine("DelFeatureNew()=false");
-                }
+                //if (f.DelFeature(strSubject, strInputAtt, "项目档案号='4101810310029' and 签发时间='2011-08-12 00:00:00'"))
+                //{
+                //    Console.WriteLine("DelFeatureNew()=true");
+                //}
+                //else
+                //{
+                //    Console.WriteLine("DelFeatureNew()=false");
+                //}
+                string dot = "2,6,1,3840754.76,38409391.76,2,3840754.76,38409464.76,3,3840506.76,38409436.76,4,3840458.76,38409386.76,5,3840547.76,38409305.76,6,3840620.76,38409296.76,510,430,,1,5,1,3840197.76,38409476.76,2,3840215.76,38409565.75,3,3839946.77,38409618.75,4,3839920.77,38409527.75,5,3839991.77,38409436.76,520,410,,1,";
+                string s = Sync.GetCKFormattedDotString(dot, false);
+                Console.WriteLine(s);
+                Log.WriteDebug(s);
                 #endregion
                 Console.ReadKey();
             }

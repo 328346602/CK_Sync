@@ -236,24 +236,26 @@ namespace CK_Sync
                 {
                     //Log.WriteDebug("确认");
                     //Log.WriteLog("确认");
-                    DatabaseOledb dbMDB = new DatabaseOledb(CM.Map.Config.GetConfigValue("MDB_ConnectString"));//MDB连接
+                    DatabaseOledb dbMDB = new DatabaseOledb(Config.GetConfigValue("MDB_ConnectString"));//MDB连接
+
                     #region Oracle连接串StringBuilder ora_Conn
                     StringBuilder ora_Conn = new StringBuilder("Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=");
-                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBIP"));
+                    ora_Conn.Append(Config.GetConfigValue("OA_DBIP"));
                     ora_Conn.Append(")(PORT=");
-                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBPort"));
+                    ora_Conn.Append(Config.GetConfigValue("OA_DBPort"));
                     ora_Conn.Append(")))(CONNECT_DATA=(SERVICE_NAME=");
-                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBName"));
+                    ora_Conn.Append(Config.GetConfigValue("OA_DBName"));
                     ora_Conn.Append(")));User Id=");
-                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBUserName"));
+                    ora_Conn.Append(Config.GetConfigValue("OA_DBUserName"));
                     ora_Conn.Append(";Password=");
-                    ora_Conn.Append(CM.Map.Config.GetConfigValue("OA_DBPassword"));
+                    ora_Conn.Append(Config.GetConfigValue("OA_DBPassword"));
                     ora_Conn.Append(";");
                     #endregion
 
                     DatabaseORC dbORA = new DatabaseORC(ora_Conn.ToString());
-                    ///开启Debug模式
-                    Sync.SetDebug(true);
+
+                    
+
                     #region 同步数据
 
                     string IGSUri = Config.GetConfigValue("IGS_PATH");
@@ -488,7 +490,11 @@ namespace CK_Sync
         {
             try
             {
-
+                #region 是否开启Debug
+                ///开启Debug模式
+                Sync.SetDebug(Boolean.Parse(Config.GetConfigValue("Debug")));
+                
+                #endregion
                 //SyncEventHandler syncEn = new SyncEventHandler(SynDatas);
                 SyncEventHandler syncEn = new SyncEventHandler(SyncData);
                 syncEn.BeginInvoke(new AsyncCallback(RunCallBack), null);
